@@ -1,0 +1,193 @@
+---
+title: Directive
+description: Use the v-tippy directive for simple and elegant tooltips on any element
+---
+
+The `v-tippy` directive provides the simplest way to add tooltips to your Vue application. It's perfect for basic tooltips that don't require complex interactions.
+
+## Basic usage
+
+The most straightforward way to use v-tippy is by passing a string as the tooltip content:
+
+```vue
+<template>
+  <button v-tippy="'Hello!'">
+    Tippy!
+  </button>
+</template>
+```
+
+## Binding formats
+
+The directive accepts multiple binding formats to suit different use cases.
+
+### String binding
+
+Pass a simple string for basic tooltips:
+
+```vue
+<button v-tippy="'Tooltip content'">
+  Hover me
+</button>
+```
+
+### Object binding
+
+Pass an object to configure multiple options:
+
+```vue
+<button v-tippy="{ content: 'Hello!', arrow: true, theme: 'light' }">
+  Tippy!
+</button>
+```
+
+### Using modifiers
+
+Modifiers provide a shorthand way to set common options:
+
+```vue
+<!-- Add an arrow -->
+<button v-tippy.arrow="'Tooltip with arrow'">
+  Arrow tooltip
+</button>
+
+<!-- Set placement -->
+<button v-tippy.top="'Appears on top'">
+  Top placement
+</button>
+
+<!-- Combine modifiers -->
+<button v-tippy.right.arrow="'Right side with arrow'">
+  Combined modifiers
+</button>
+```
+
+<Note>
+The `.arrow` modifier sets `arrow: true` in the options. Any other modifier (except `arrow`) is treated as a placement value.
+</Note>
+
+## Automatic content detection
+
+The directive automatically detects content from HTML attributes:
+
+### From title attribute
+
+```vue
+<button v-tippy title="Tooltip from title">
+  Hover me
+</button>
+```
+
+<Note>
+The `title` attribute is automatically removed from the element to prevent the browser's default tooltip from appearing.
+</Note>
+
+### From content attribute
+
+```vue
+<button v-tippy content="Tooltip from content attribute">
+  Hover me
+</button>
+```
+
+## Lifecycle events
+
+You can listen to Tippy lifecycle events by adding event handlers to your element:
+
+```vue
+<template>
+  <button 
+    v-tippy="'Hello!'"
+    @tippy-show="onShow"
+    @tippy-shown="onShown"
+    @tippy-hide="onHide"
+    @tippy-hidden="onHidden"
+    @tippy-mount="onMount"
+  >
+    Tippy with events
+  </button>
+</template>
+
+<script setup>
+const onShow = (instance) => {
+  console.log('Tooltip is about to show')
+}
+
+const onShown = (instance) => {
+  console.log('Tooltip is now visible')
+}
+
+const onHide = (instance) => {
+  console.log('Tooltip is about to hide')
+}
+
+const onHidden = (instance) => {
+  console.log('Tooltip is now hidden')
+}
+
+const onMount = (instance) => {
+  console.log('Tooltip has been mounted')
+}
+</script>
+```
+
+## Reactive content
+
+The directive automatically updates when the binding value changes:
+
+```vue
+<template>
+  <div>
+    <button v-tippy="tooltipContent">
+      Dynamic tooltip
+    </button>
+    <button @click="updateContent">
+      Change content
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const tooltipContent = ref('Initial content')
+
+const updateContent = () => {
+  tooltipContent.value = 'Updated content'
+}
+</script>
+```
+
+## Implementation details
+
+The directive internally uses the `useTippy` composable and handles the following:
+
+- **Mounted**: Creates the Tippy instance with the provided options
+- **Updated**: Updates the instance props when the binding value changes
+- **Unmounted**: Destroys the Tippy instance to clean up resources
+
+### Instance access
+
+The Tippy instance is attached to the element and can be accessed via:
+
+```js
+// Access the instance
+const element = document.querySelector('[data-v-tippy]')
+const instance = element.$tippy || element._tippy
+
+// Programmatically control the tooltip
+instance.show()
+instance.hide()
+instance.disable()
+instance.enable()
+```
+
+## Best practices
+
+<Note>
+Use the directive for simple tooltips. For complex tooltips with interactions, consider using the [Component](/usage/component) or [Composition API](/usage/composition-api) approach.
+</Note>
+
+<Warning>
+When using reactive content, ensure that falsy values (including `undefined`) are treated as `null` to prevent showing empty tooltips.
+</Warning>

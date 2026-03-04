@@ -1,0 +1,822 @@
+---
+title: Props
+description: Complete reference for all VueTippy configuration properties
+---
+
+Props are configurable properties you can pass to VueTippy through the directive, component, or composable:
+
+<CodeGroup>
+```html Directive
+<button v-tippy="{ placement: 'right', arrow: false }">
+  Hover me
+</button>
+```
+
+```html Component
+<tippy placement="right" :arrow="false">
+  <button>Hover me</button>
+</tippy>
+```
+
+```js Composable
+import { useTippy } from 'vue-tippy'
+
+useTippy(target, {
+  placement: 'right',
+  arrow: false
+})
+```
+</CodeGroup>
+
+## Content
+
+<ParamField path="content" type="string | Element | Ref | Component">
+  The content displayed inside the tippy.
+
+  <Tabs>
+    <Tab title="String">
+      ```js
+      useTippy(target, {
+        content: 'Hello world'
+      })
+      ```
+    </Tab>
+    <Tab title="Element">
+      ```js
+      useTippy(target, {
+        content: document.createElement('div')
+      })
+      ```
+    </Tab>
+    <Tab title="Vue Ref">
+      ```js
+      import { ref } from 'vue'
+      const message = ref('Hello!')
+      
+      useTippy(target, {
+        content: message
+      })
+      ```
+    </Tab>
+    <Tab title="Vue Component">
+      ```js
+      import { h, computed } from 'vue'
+      import Counter from './Counter.vue'
+      
+      // Without props
+      useTippy(target, {
+        content: Counter
+      })
+      
+      // With props
+      useTippy(target, {
+        content: h(Counter, { message: 'Hello' })
+      })
+      
+      // With reactive props
+      useTippy(target, {
+        content: computed(() => 
+          h(Counter, { onClick: () => count.value++ })
+        )
+      })
+      ```
+    </Tab>
+    <Tab title="Function">
+      ```js
+      useTippy(target, {
+        content: (reference) => reference.getAttribute('title')
+      })
+      ```
+    </Tab>
+  </Tabs>
+</ParamField>
+
+<ParamField path="allowHTML" type="boolean" default="false">
+  Determines if content strings are parsed as HTML instead of text.
+
+  <Warning>
+    Only enable this if you trust the content source. Parsing untrusted HTML can lead to XSS vulnerabilities.
+  </Warning>
+
+  ```js
+  useTippy(target, {
+    allowHTML: true,
+    content: '<strong>Bold text</strong>'
+  })
+  ```
+</ParamField>
+
+## Placement
+
+<ParamField path="placement" type="string" default="top">
+  The preferred placement of the tippy. Popper's flip modifier can change this to the opposite placement if it has more space.
+
+  **Available values:**
+  - `top`, `top-start`, `top-end`
+  - `right`, `right-start`, `right-end`
+  - `bottom`, `bottom-start`, `bottom-end`
+  - `left`, `left-start`, `left-end`
+  - `auto`, `auto-start`, `auto-end` (chooses the side with most space)
+
+  ```js
+  useTippy(target, {
+    placement: 'bottom-start'
+  })
+  ```
+</ParamField>
+
+<ParamField path="offset" type="[number, number]" default="[0, 10]">
+  Displaces the tippy from its reference element in pixels as `[skidding, distance]`.
+
+  ```js
+  useTippy(target, {
+    offset: [20, 10] // 20px skidding, 10px distance
+  })
+  ```
+
+  <Note>
+    See [Popper's offset documentation](https://popper.js.org/docs/v2/modifiers/offset/) for details.
+  </Note>
+</ParamField>
+
+<ParamField path="followCursor" type="boolean | string" default="false">
+  Determines if the tippy follows the user's mouse cursor.
+
+  **Available values:**
+  - `false` - disabled
+  - `true` - follow on both x and y axes
+  - `'horizontal'` - follow on x axis only
+  - `'vertical'` - follow on y axis only
+  - `'initial'` - follow until it shows (respecting delay)
+
+  ```js
+  useTippy(target, {
+    followCursor: 'horizontal'
+  })
+  ```
+</ParamField>
+
+<ParamField path="getReferenceClientRect" type="function | null" default="null">
+  Custom positioning reference for the tippy. Returns a ClientRect object.
+
+  ```js
+  useTippy(target, {
+    getReferenceClientRect: () => ({
+      width: 100,
+      height: 100,
+      left: 100,
+      right: 200,
+      top: 100,
+      bottom: 200
+    })
+  })
+  ```
+</ParamField>
+
+<ParamField path="inlinePositioning" type="boolean" default="false">
+  Provides enhanced support for `display: inline` elements. Chooses the most appropriate rect based on placement.
+
+  ```js
+  useTippy(target, {
+    inlinePositioning: true
+  })
+  ```
+</ParamField>
+
+<ParamField path="sticky" type="boolean | string" default="false">
+  Determines if the tippy sticks to the reference element while mounted.
+
+  **Available values:**
+  - `false` - disabled
+  - `true` - check both reference and popper
+  - `'reference'` - only check reference rect
+  - `'popper'` - only check popper rect
+
+  <Warning>
+    This has a performance cost since checks run on every animation frame. Use only when necessary, such as when the reference element's position is animating.
+  </Warning>
+
+  ```js
+  useTippy(target, {
+    sticky: 'reference'
+  })
+  ```
+</ParamField>
+
+## Appearance
+
+<ParamField path="arrow" type="boolean | string | Element" default="true">
+  Determines if the tippy has an arrow.
+
+  <Warning>
+    A [theme](/styling/themes) or custom arrow styling is required for the arrow to display correctly.
+  </Warning>
+
+  ```js
+  // Disable arrow
+  useTippy(target, {
+    arrow: false
+  })
+
+  // Custom SVG arrow
+  useTippy(target, {
+    arrow: '<svg>...</svg>'
+  })
+
+  // Custom element
+  useTippy(target, {
+    arrow: svgElement
+  })
+  ```
+</ParamField>
+
+<ParamField path="theme" type="string" default="">
+  The theme applied to the tippy element. The core CSS defaults to a dark theme.
+
+  ```js
+  useTippy(target, {
+    theme: 'tomato'
+  })
+  ```
+
+  <Note>
+    See [Themes](/styling/themes) for details on creating custom themes.
+  </Note>
+</ParamField>
+
+<ParamField path="maxWidth" type="number | string" default="350">
+  Maximum width of the tippy in pixels. Prevents it from being too wide to read.
+
+  ```js
+  useTippy(target, {
+    maxWidth: 500
+  })
+
+  // Remove max width constraint
+  useTippy(target, {
+    maxWidth: 'none'
+  })
+  ```
+
+  <Note>
+    This applies to the `.tippy-box` inner element. The core CSS applies `max-width: calc(100vw - 10px)` on the root popper node to prevent viewport overflow on small screens.
+  </Note>
+</ParamField>
+
+<ParamField path="zIndex" type="number" default="9999">
+  The `z-index` CSS property on the root popper node.
+
+  ```js
+  useTippy(target, {
+    zIndex: 10000
+  })
+  ```
+</ParamField>
+
+## Animation
+
+<ParamField path="animation" type="string" default="fade">
+  The type of transition animation.
+
+  ```js
+  useTippy(target, {
+    animation: 'scale'
+  })
+  ```
+
+  <Note>
+    See [Animations](/styling/animations) for available animation types and how to create custom animations.
+  </Note>
+</ParamField>
+
+<ParamField path="duration" type="number | [number, number]" default="[300, 250]">
+  Duration of the transition animation in milliseconds as `[show, hide]`.
+
+  ```js
+  // Same duration for show and hide
+  useTippy(target, {
+    duration: 200
+  })
+
+  // Different durations
+  useTippy(target, {
+    duration: [500, 250]
+  })
+
+  // Only change show duration
+  useTippy(target, {
+    duration: [500, null]
+  })
+  ```
+</ParamField>
+
+<ParamField path="animateFill" type="boolean" default="false">
+  Determines if the background fill color should be animated.
+
+  <Note>
+    You must import `tippy.js/dist/backdrop.css` and `tippy.js/animations/shift-away.css` for this to work.
+  </Note>
+
+  ```js
+  import 'tippy.js/dist/backdrop.css'
+  import 'tippy.js/animations/shift-away.css'
+
+  useTippy(target, {
+    animateFill: true
+  })
+  ```
+</ParamField>
+
+<ParamField path="inertia" type="boolean" default="false">
+  Applies a CSS spring-like animation to the transition.
+
+  ```js
+  useTippy(target, {
+    inertia: true,
+    duration: 500 // Increase duration for better effect
+  })
+  ```
+
+  Customize the timing function:
+  ```css
+  .tippy-box[data-inertia][data-state='visible'] {
+    transition-timing-function: cubic-bezier(0.54, 1.5, 0.38, 1.11);
+  }
+  ```
+</ParamField>
+
+<ParamField path="moveTransition" type="string" default="">
+  The transition applied to the root popper node when it changes position (e.g., flips or moves).
+
+  ```js
+  useTippy(target, {
+    moveTransition: 'transform 0.2s ease-out'
+  })
+  ```
+</ParamField>
+
+## Timing
+
+<ParamField path="delay" type="number | [number, number]" default="0">
+  Delay in milliseconds before the tippy shows or hides as `[show, hide]`.
+
+  ```js
+  // Same delay for show and hide
+  useTippy(target, {
+    delay: 100
+  })
+
+  // Different delays
+  useTippy(target, {
+    delay: [500, 200]
+  })
+
+  // Only show delay
+  useTippy(target, {
+    delay: [500, null]
+  })
+  ```
+</ParamField>
+
+<ParamField path="showOnCreate" type="boolean" default="false">
+  Show the tippy immediately when created, respecting the `delay` prop.
+
+  ```js
+  useTippy(target, {
+    showOnCreate: true
+  })
+  ```
+</ParamField>
+
+## Interactivity
+
+<ParamField path="interactive" type="boolean" default="false">
+  Enables interactive content inside the tippy that can be hovered over and clicked without hiding.
+
+  ```js
+  useTippy(target, {
+    interactive: true
+  })
+  ```
+
+  <Note>
+    When `interactive: true`, the default `appendTo` behavior changes to `"parent"`.
+  </Note>
+</ParamField>
+
+<ParamField path="interactiveBorder" type="number" default="2">
+  Size of the invisible border around the tippy in pixels that prevents it from hiding when the cursor leaves.
+
+  ```js
+  useTippy(target, {
+    interactive: true,
+    interactiveBorder: 30
+  })
+  ```
+</ParamField>
+
+<ParamField path="interactiveDebounce" type="number" default="0">
+  Debounce time in milliseconds when the cursor leaves the tippy's interactive region.
+
+  ```js
+  useTippy(target, {
+    interactive: true,
+    interactiveDebounce: 75
+  })
+  ```
+
+  <Note>
+    Offers a temporal alternative to `interactiveBorder`, and can be used in conjunction with it.
+  </Note>
+</ParamField>
+
+## Triggers
+
+<ParamField path="trigger" type="string" default="mouseenter focus">
+  Events that cause the tippy to show. Multiple event names are separated by spaces.
+
+  **Available values:**
+  - `'mouseenter'` - show on mouse enter
+  - `'focus'` - show on focus
+  - `'click'` - show on click
+  - `'focusin'` - show on focus in
+  - `'manual'` - only show programmatically
+
+  ```js
+  useTippy(target, {
+    trigger: 'click'
+  })
+
+  // Multiple triggers
+  useTippy(target, {
+    trigger: 'mouseenter click'
+  })
+
+  // Manual control only
+  useTippy(target, {
+    trigger: 'manual'
+  })
+  ```
+</ParamField>
+
+<ParamField path="triggerTarget" type="Element | Element[] | Ref | null" default="null">
+  The element(s) that trigger event listeners are added to. Allows separating the tippy's positioning from its trigger source.
+
+  ```js
+  useTippy(target, {
+    triggerTarget: someElement
+  })
+
+  // Multiple elements
+  useTippy(target, {
+    triggerTarget: [element1, element2]
+  })
+
+  // Vue ref
+  import { ref } from 'vue'
+  const triggerRef = ref()
+  
+  useTippy(target, {
+    triggerTarget: triggerRef
+  })
+  ```
+</ParamField>
+
+<ParamField path="hideOnClick" type="boolean | string" default="true">
+  Determines if the tippy hides when clicking the reference or outside the tippy.
+
+  **Available values:**
+  - `true` - hide on any click
+  - `false` - never hide on click
+  - `'toggle'` - hide only when clicking reference, not outside
+
+  ```js
+  useTippy(target, {
+    hideOnClick: false
+  })
+
+  // Toggle behavior
+  useTippy(target, {
+    hideOnClick: 'toggle'
+  })
+  ```
+</ParamField>
+
+<ParamField path="touch" type="boolean | string | [string, number]" default="true">
+  Behavior on touch devices.
+
+  **Available values:**
+  - `true` - normal touch behavior
+  - `false` - disable on touch devices
+  - `'hold'` - require press and hold
+  - `['hold', 500]` - require press and hold for 500ms
+
+  ```js
+  useTippy(target, {
+    touch: false
+  })
+
+  // Long press for 800ms
+  useTippy(target, {
+    touch: ['hold', 800]
+  })
+  ```
+</ParamField>
+
+## DOM
+
+<ParamField path="appendTo" type="Element | 'parent' | function" default="() => document.body">
+  The element to append the tippy to.
+
+  ```js
+  // Append to parent node
+  useTippy(target, {
+    appendTo: 'parent'
+  })
+
+  // Append to specific element
+  useTippy(target, {
+    appendTo: document.getElementById('container')
+  })
+
+  // Function (receives reference element)
+  useTippy(target, {
+    appendTo: (ref) => ref.closest('.container')
+  })
+  ```
+
+  <Note>
+    Useful when dealing with accessibility, clipping, or z-index issues. When `interactive: true`, defaults to `"parent"`.
+  </Note>
+</ParamField>
+
+<ParamField path="ignoreAttributes" type="boolean" default="true">
+  Whether to ignore `data-tippy-*` attributes on the reference element.
+
+  ```js
+  useTippy(target, {
+    ignoreAttributes: false // Consider data-tippy-* attributes
+  })
+  ```
+
+  <Note>
+    When using UI libraries like Vue, this is generally not necessary and enabling it slows down initialization.
+  </Note>
+</ParamField>
+
+## Accessibility
+
+<ParamField path="aria" type="object" default="{ content: 'auto', expanded: 'auto' }">
+  ARIA attribute configuration.
+
+  **Properties:**
+  - `content` - The `aria-*` attribute for announcing tippy content (`'auto'`, `'describedby'`, `'labelledby'`, or `null`)
+  - `expanded` - Whether to add `aria-expanded` attribute (`'auto'`, `true`, or `false`)
+
+  <Tabs>
+    <Tab title="Default">
+      ```js
+      useTippy(target, {
+        aria: {
+          content: 'auto', // 'describedby' normally, null when interactive
+          expanded: 'auto'  // matches interactive setting
+        }
+      })
+      ```
+    </Tab>
+    <Tab title="Label Instead of Description">
+      ```js
+      useTippy(target, {
+        aria: {
+          content: 'labelledby' // Announce as label
+        }
+      })
+      ```
+    </Tab>
+    <Tab title="WCAG 2.1 Strict">
+      ```js
+      useTippy(target, {
+        interactive: true,
+        aria: {
+          content: 'describedby' // Still announce even when interactive
+        }
+      })
+      ```
+    </Tab>
+    <Tab title="Manual Control">
+      ```js
+      useTippy(target, {
+        aria: {
+          content: null,
+          expanded: false
+        }
+      })
+      ```
+    </Tab>
+  </Tabs>
+</ParamField>
+
+<ParamField path="role" type="string" default="tooltip">
+  The `role` attribute on the tippy element.
+
+  ```js
+  useTippy(target, {
+    role: 'menu'
+  })
+  ```
+</ParamField>
+
+## Advanced
+
+<ParamField path="popperOptions" type="object" default="{}">
+  Custom Popper.js options for full control over positioning.
+
+  ```js
+  useTippy(target, {
+    popperOptions: {
+      strategy: 'fixed',
+      modifiers: [
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements: ['bottom', 'right']
+          }
+        },
+        {
+          name: 'preventOverflow',
+          options: {
+            altAxis: true,
+            tether: false
+          }
+        }
+      ]
+    }
+  })
+  ```
+
+  <Note>
+    See [Popper.js documentation](https://popper.js.org/docs/v2/) for all available options.
+  </Note>
+</ParamField>
+
+## Lifecycle hooks
+
+<ParamField path="onCreate" type="function">
+  Invoked when the tippy is created.
+
+  ```js
+  useTippy(target, {
+    onCreate(instance) {
+      console.log('Tippy created', instance)
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onShow" type="function">
+  Invoked when the tippy begins to show.
+
+  ```js
+  useTippy(target, {
+    onShow(instance) {
+      console.log('Showing')
+      // Return false to cancel
+      return someCondition
+    }
+  })
+  ```
+
+  <Note>
+    Return `false` to conditionally cancel the show.
+  </Note>
+</ParamField>
+
+<ParamField path="onMount" type="function">
+  Invoked when the tippy is mounted to the DOM.
+
+  ```js
+  useTippy(target, {
+    onMount(instance) {
+      console.log('Mounted to DOM')
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onShown" type="function">
+  Invoked when the tippy has fully transitioned in.
+
+  ```js
+  useTippy(target, {
+    onShown(instance) {
+      console.log('Fully visible')
+    }
+  })
+  ```
+
+  <Note>
+    Relies on CSS `transitionend` events. If using a custom render function, you'll need to call this lifecycle manually.
+  </Note>
+</ParamField>
+
+<ParamField path="onHide" type="function">
+  Invoked when the tippy begins to hide.
+
+  ```js
+  useTippy(target, {
+    onHide(instance) {
+      console.log('Hiding')
+      // Return false to cancel
+      return someCondition
+    }
+  })
+  ```
+
+  <Note>
+    Return `false` to conditionally cancel the hide.
+  </Note>
+</ParamField>
+
+<ParamField path="onHidden" type="function">
+  Invoked when the tippy has fully hidden and unmounted from the DOM.
+
+  ```js
+  useTippy(target, {
+    onHidden(instance) {
+      console.log('Fully hidden and unmounted')
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onDestroy" type="function">
+  Invoked when the tippy is destroyed.
+
+  ```js
+  useTippy(target, {
+    onDestroy(instance) {
+      console.log('Destroyed')
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onBeforeUpdate" type="function">
+  Invoked before the tippy props are updated.
+
+  ```js
+  useTippy(target, {
+    onBeforeUpdate(instance, partialProps) {
+      console.log('About to update with', partialProps)
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onAfterUpdate" type="function">
+  Invoked after the tippy props have been updated.
+
+  ```js
+  useTippy(target, {
+    onAfterUpdate(instance, partialProps) {
+      console.log('Updated with', partialProps)
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onTrigger" type="function">
+  Invoked when the tippy is triggered by a DOM event.
+
+  ```js
+  useTippy(target, {
+    onTrigger(instance, event) {
+      console.log('Triggered by', event.type)
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onUntrigger" type="function">
+  Invoked when the tippy is untriggered by a DOM event.
+
+  ```js
+  useTippy(target, {
+    onUntrigger(instance, event) {
+      console.log('Untriggered by', event.type)
+    }
+  })
+  ```
+</ParamField>
+
+<ParamField path="onClickOutside" type="function">
+  Invoked when clicking anywhere outside the tippy or reference element.
+
+  ```js
+  useTippy(target, {
+    onClickOutside(instance, event) {
+      console.log('Clicked outside')
+    }
+  })
+  ```
+</ParamField>

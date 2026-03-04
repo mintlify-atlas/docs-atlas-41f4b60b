@@ -1,0 +1,164 @@
+---
+title: Installation
+description: Install VueTippy in your Vue 3 project via npm, yarn, or pnpm
+---
+
+# Installation
+
+Add VueTippy to your Vue 3 project using your preferred package manager.
+
+## Install the package
+
+<CodeGroup>
+```bash npm
+npm install vue-tippy@v6
+```
+
+```bash yarn
+yarn add vue-tippy@v6
+```
+
+```bash pnpm
+pnpm add vue-tippy@v6
+```
+</CodeGroup>
+
+<Info>
+  VueTippy v6 requires Vue 3.2.0 or higher. Make sure your project meets this requirement.
+</Info>
+
+## Usage options
+
+VueTippy offers flexible usage patterns. You can either:
+
+1. **Import components/directives locally** in individual components (recommended for tree-shaking)
+2. **Install globally** for app-wide access
+
+### Local usage (recommended)
+
+Import only what you need in each component:
+
+```vue
+<template>
+  <button v-tippy="'Hello!'">Hover me</button>
+</template>
+
+<script setup>
+import { directive as VTippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
+</script>
+```
+
+### Global installation
+
+For app-wide access to VueTippy directives and components, install the plugin in your main application file:
+
+<Steps>
+  <Step title="Import the plugin">
+    Import VueTippy and the CSS in your main application file (e.g., `main.js` or `main.ts`):
+
+    ```js
+    import { createApp } from 'vue'
+    import VueTippy from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css' // optional for styling
+
+    import App from './App.vue'
+    ```
+  </Step>
+
+  <Step title="Register the plugin">
+    Use the plugin with optional configuration:
+
+    ```js
+    const app = createApp(App)
+
+    app.use(VueTippy, {
+      directive: 'tippy', // => v-tippy
+      component: 'tippy', // => <tippy/>
+      componentSingleton: 'tippy-singleton', // => <tippy-singleton/>
+      defaultProps: {
+        placement: 'auto-end',
+        allowHTML: true,
+      }, // => Global default options
+    })
+
+    app.mount('#app')
+    ```
+  </Step>
+
+  <Step title="Use in any component">
+    Now `v-tippy`, `<tippy>`, and `<tippy-singleton>` are available globally:
+
+    ```vue
+    <template>
+      <button v-tippy="'No import needed!'">Hover me</button>
+    </template>
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  You can also import the plugin using: `import { plugin as VueTippy } from 'vue-tippy'`
+</Note>
+
+## Configuration options
+
+When installing globally, you can customize VueTippy's behavior:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `directive` | `string` | `'tippy'` | Name for the directive (e.g., `v-tippy`) |
+| `component` | `string` | `'tippy'` | Name for the component (e.g., `<tippy/>`) |
+| `componentSingleton` | `string` | `'tippy-singleton'` | Name for the singleton component |
+| `defaultProps` | `object` | `{}` | Default Tippy.js props applied to all instances |
+
+<Tip>
+  Set `defaultProps` to configure default behavior across your entire app, like placement, animation, or theme.
+</Tip>
+
+## Styling
+
+VueTippy relies on Tippy.js CSS for default styling. Import the CSS file to enable tooltips:
+
+```js
+import 'tippy.js/dist/tippy.css'
+```
+
+### Optional themes
+
+Tippy.js includes additional themes you can import:
+
+<CodeGroup>
+```js Light border
+import 'tippy.js/themes/light-border.css'
+```
+
+```js Light
+import 'tippy.js/themes/light.css'
+```
+
+```js Material
+import 'tippy.js/themes/material.css'
+```
+
+```js Translucent
+import 'tippy.js/themes/translucent.css'
+```
+</CodeGroup>
+
+Apply themes using the `theme` prop:
+
+```vue
+<button v-tippy="{ content: 'Themed!', theme: 'light' }">Hover me</button>
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create your first tooltip
+  </Card>
+  <Card title="Props" icon="gear" href="/api/props">
+    Explore all configuration options
+  </Card>
+</CardGroup>

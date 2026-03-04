@@ -1,0 +1,324 @@
+---
+title: useTippy
+description: Low-level composable for creating tooltips with full control over lifecycle and reactivity
+---
+
+The `useTippy` composable provides a flexible, low-level API for creating tooltips with complete control over their lifecycle, state, and behavior. It's ideal for complex interactions and custom tooltip implementations.
+
+## Signature
+
+```typescript
+function useTippy(
+  el: TippyElement | (() => TippyElement) | Ref<TippyElement> | Ref<TippyElement | undefined>,
+  opts?: TippyOptions,
+  settings?: {
+    mount: boolean,
+    appName: string,
+  }
+): UseTippyReturn
+```
+
+## Parameters
+
+<ParamField path="el" type="TippyElement | (() => TippyElement) | Ref<TippyElement>" required>
+  The target element for the tooltip. Can be:
+  - A DOM element
+  - A ref to an element
+  - A function that returns an element
+  - A component instance (will use `$el`)
+</ParamField>
+
+<ParamField path="opts" type="TippyOptions" default="{}">
+  Tippy.js configuration options. All [Tippy.js props](/api/props) are supported. Common options include:
+  
+  - `content` - The tooltip content (string, HTML, or Vue component)
+  - `placement` - Tooltip position (e.g., 'top', 'bottom', 'left', 'right')
+  - `trigger` - Event that triggers the tooltip ('mouseenter focus', 'click', etc.)
+  - `interactive` - Whether the tooltip is interactive
+  - `arrow` - Show arrow pointer
+  
+  This parameter is reactive - changes will automatically update the tooltip.
+</ParamField>
+
+<ParamField path="settings" type="object" default="{ mount: true, appName: 'Tippy' }">
+  Configuration for the composable behavior:
+  
+  <Expandable title="properties">
+    <ResponseField name="mount" type="boolean" default="true">
+      Whether to automatically mount the tooltip when the component is mounted
+    </ResponseField>
+    
+    <ResponseField name="appName" type="string" default="'Tippy'">
+      Name for the internal Vue app (used when rendering Vue components as content)
+    </ResponseField>
+  </Expandable>
+</ParamField>
+
+## Return value
+
+Returns an object with the following properties and methods:
+
+<ResponseField name="tippy" type="Ref<Instance | undefined>">
+  A ref containing the Tippy.js instance. Provides access to the underlying instance for advanced use cases.
+</ResponseField>
+
+<ResponseField name="state" type="Ref<TippyState>">
+  Reactive state object tracking the tooltip's current status:
+  
+  ```typescript
+  {
+    isEnabled: boolean    // Whether the tooltip is enabled
+    isVisible: boolean    // Whether the tooltip is currently visible
+    isDestroyed: boolean  // Whether the tooltip has been destroyed
+    isMounted: boolean    // Whether the tooltip is mounted to DOM
+    isShown: boolean      // Whether the show transition completed
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="show" type="() => void">
+  Programmatically show the tooltip.
+</ResponseField>
+
+<ResponseField name="hide" type="() => void">
+  Programmatically hide the tooltip.
+</ResponseField>
+
+<ResponseField name="enable" type="() => void">
+  Enable the tooltip (allow it to show on trigger events).
+</ResponseField>
+
+<ResponseField name="disable" type="() => void">
+  Disable the tooltip (prevent it from showing).
+</ResponseField>
+
+<ResponseField name="setContent" type="(value: TippyContent) => void">
+  Update the tooltip content. Accepts strings, HTML, or Vue components.
+</ResponseField>
+
+<ResponseField name="setProps" type="(value: TippyOptions) => void">
+  Update multiple tooltip properties at once.
+</ResponseField>
+
+<ResponseField name="refresh" type="() => void">
+  Refresh all tooltip props. Useful when you need to manually trigger a full props update.
+</ResponseField>
+
+<ResponseField name="refreshContent" type="() => void">
+  Refresh only the tooltip content. More efficient than `refresh()` when only content changed.
+</ResponseField>
+
+<ResponseField name="mount" type="() => void">
+  Manually mount the tooltip to the target element.
+</ResponseField>
+
+<ResponseField name="unmount" type="() => void">
+  Unmount the tooltip from the DOM without destroying it.
+</ResponseField>
+
+<ResponseField name="destroy" type="() => void">
+  Completely destroy the tooltip instance and clean up all resources.
+</ResponseField>
+
+## Examples
+
+### Basic usage
+
+```vue
+<template>
+  <button ref="btn">Hover me</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const btn = ref()
+
+useTippy(btn, {
+  content: 'Hello from Tippy!',
+})
+</script>
+```
+
+### With all return values
+
+```vue
+<template>
+  <button ref="btn">Tippy Button</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const btn = ref()
+
+const {
+  tippy,
+  refresh,
+  refreshContent,
+  setContent,
+  setProps,
+  destroy,
+  hide,
+  show,
+  disable,
+  enable,
+  unmount,
+  mount,
+  state,
+} = useTippy(btn, {
+  content: 'Initial content',
+  arrow: true,
+})
+
+// Programmatically control the tooltip
+function updateContent() {
+  setContent('Updated content!')
+}
+
+function toggleTooltip() {
+  if (state.value.isVisible) {
+    hide()
+  } else {
+    show()
+  }
+}
+</script>
+```
+
+### Vue component as content
+
+<Tabs>
+  <Tab title="Using component import">
+    ```vue
+    <template>
+      <button ref="btn">Show counter</button>
+    </template>
+
+    <script setup>
+    import { ref } from 'vue'
+    import { useTippy } from 'vue-tippy'
+    import Counter from '@/components/Counter.vue'
+
+    const btn = ref()
+
+    useTippy(btn, {
+      content: Counter,
+      arrow: true,
+      interactive: true,
+    })
+    </script>
+    ```
+  </Tab>
+  
+  <Tab title="Using h() with props">
+    ```vue
+    <template>
+      <button ref="btn">Show counter</button>
+    </template>
+
+    <script setup>
+    import { ref, h } from 'vue'
+    import { useTippy } from 'vue-tippy'
+    import Counter from '@/components/Counter.vue'
+
+    const btn = ref()
+
+    useTippy(btn, {
+      content: h(Counter, { initialCount: 42 }),
+      arrow: true,
+      interactive: true,
+    })
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+### Reactive props
+
+```vue
+<template>
+  <div>
+    <button ref="btn">Hover me</button>
+    <button @click="updatePlacement">Change placement</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const btn = ref()
+const options = ref({
+  content: 'Reactive tooltip',
+  placement: 'top',
+})
+
+// Automatically updates when options change
+useTippy(btn, options)
+
+function updatePlacement() {
+  options.value.placement = options.value.placement === 'top' ? 'bottom' : 'top'
+}
+</script>
+```
+
+### Manual mounting
+
+```vue
+<template>
+  <div>
+    <button ref="btn">Tooltip target</button>
+    <button @click="mountTooltip">Mount tooltip</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const btn = ref()
+
+// Don't auto-mount
+const { mount } = useTippy(
+  btn,
+  { content: 'Manually mounted!' },
+  { mount: false }
+)
+
+function mountTooltip() {
+  mount()
+}
+</script>
+```
+
+### Monitoring state
+
+```vue
+<template>
+  <div>
+    <button ref="btn">Hover me</button>
+    <p>Tooltip visible: {{ state.isVisible }}</p>
+    <p>Tooltip mounted: {{ state.isMounted }}</p>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const btn = ref()
+
+const { state } = useTippy(btn, {
+  content: 'Watch my state!',
+})
+</script>
+```
+
+## See also
+
+- [useTippyComponent](/api/composables/use-tippy-component) - Higher-level composable that returns a component
+- [useSingleton](/api/composables/use-singleton) - Create singleton tooltips
+- [Props](/api/props) - Full list of Tippy.js configuration options

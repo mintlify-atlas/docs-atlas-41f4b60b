@@ -1,0 +1,310 @@
+---
+title: Component
+description: Use the Tippy component for building complex tooltips with interactions and custom content
+---
+
+The `<Tippy>` component provides a high-level, declarative way to create tooltips with complex content and interactions. It's ideal for tooltips that need slots, events, or advanced configurations.
+
+## Basic usage
+
+The simplest way to use the Tippy component is with the `content` prop:
+
+```vue
+<template>
+  <Tippy content="Hi!">
+    <button>Tippy!</button>
+  </Tippy>
+</template>
+```
+
+## Component props
+
+In addition to all standard Tippy.js options, the component accepts these Vue-specific props:
+
+<ParamField path="tag" type="string | null" default="span">
+  The HTML tag used to wrap the trigger element. Set to `null` to mount the tooltip directly on the child element.
+</ParamField>
+
+<ParamField path="content-tag" type="string" default="span">
+  The HTML tag used to wrap the tooltip content when using the `content` slot.
+</ParamField>
+
+<ParamField path="content-class" type="string" default="null">
+  CSS class to apply to the content wrapper element.
+</ParamField>
+
+<ParamField path="to" type="string | Element" default="null">
+  Target element or selector for the tooltip. Use `"parent"` to attach the tooltip to the parent element.
+</ParamField>
+
+## Using slots
+
+The component provides two slots for maximum flexibility:
+
+### Default slot
+
+The default slot defines the trigger element:
+
+```vue
+<template>
+  <Tippy content="Tooltip text">
+    <template #default>
+      <button>Click me</button>
+    </template>
+  </Tippy>
+</template>
+```
+
+### Content slot
+
+The content slot defines the tooltip content:
+
+```vue
+<template>
+  <Tippy>
+    <button>Tippy!</button>
+    <template #content>
+      <div>
+        <h3>Custom Content</h3>
+        <p>Rich HTML content in tooltip</p>
+      </div>
+    </template>
+  </Tippy>
+</template>
+```
+
+## Slot props
+
+Both slots receive reactive properties that you can use in your template:
+
+### Default slot props
+
+```vue
+<template>
+  <Tippy>
+    <template #default="{ state }">
+      <button>
+        Tippy! ({{ state.isVisible ? 'visible' : 'hidden' }})
+      </button>
+    </template>
+    <template #content>
+      Hello!
+    </template>
+  </Tippy>
+</template>
+```
+
+### Content slot props
+
+```vue
+<template>
+  <Tippy arrow interactive :hide-on-click="false">
+    <button>Tippy!</button>
+    <template #content="{ hide }">
+      <div>
+        <p>Click the button to close</p>
+        <button @click="hide()">Close</button>
+      </div>
+    </template>
+  </Tippy>
+</template>
+```
+
+Available slot props include:
+- `state` - Reactive state object
+- `hide()` - Function to hide the tooltip
+- `show()` - Function to show the tooltip
+- `disable()` - Function to disable the tooltip
+- `enable()` - Function to enable the tooltip
+- All other methods from `useTippy` return value
+
+## Advanced examples
+
+### Interactive tooltip with state
+
+```vue
+<template>
+  <Tippy
+    arrow
+    interactive
+    :hide-on-click="false"
+    @state="onStateChange"
+  >
+    <template #default="{ state }">
+      <div>
+        <h1>Tippy!</h1>
+        <p>State: {{ state.isVisible ? 'visible' : 'hidden' }}</p>
+      </div>
+    </template>
+
+    <template #content="{ hide }">
+      <div>
+        <p>Interactive content</p>
+        <button @click="hide()">Close</button>
+      </div>
+    </template>
+  </Tippy>
+</template>
+
+<script setup>
+const onStateChange = (state) => {
+  console.log('Tooltip state changed:', state)
+}
+</script>
+```
+
+### Custom wrapper tags and classes
+
+```vue
+<template>
+  <Tippy 
+    tag="button" 
+    content-tag="div" 
+    content-class="tooltip-wrapper"
+  >
+    <template #default>Tippy!</template>
+    <template #content>Styled content</template>
+  </Tippy>
+</template>
+
+<style>
+.tooltip-wrapper {
+  padding: 1rem;
+  max-width: 300px;
+}
+</style>
+```
+
+### Mounting on child element
+
+Set `tag` to `null` to mount the tooltip directly on the child element:
+
+```vue
+<template>
+  <Tippy content="Hi!" :tag="null">
+    <button>Tippy!</button>
+  </Tippy>
+</template>
+```
+
+<Warning>
+When using `:tag="null"`, ensure you have exactly one root element in the default slot.
+</Warning>
+
+### Parent targeting with `to`
+
+Use `to="parent"` to attach the tooltip to the parent element:
+
+```vue
+<template>
+  <button>
+    <Tippy to="parent" content-tag="div" content-class="content-wrapper">
+      <template #content>
+        Attached to parent button
+      </template>
+    </Tippy>
+    Tippy!
+  </button>
+</template>
+```
+
+### CSS selector targeting
+
+Target any element on the page using a CSS selector:
+
+```vue
+<template>
+  <div>
+    <button id="my-button">Hover me</button>
+    <Tippy to="#my-button" content="Tooltip for button" />
+  </div>
+</template>
+```
+
+## Events
+
+The component emits a `state` event whenever the tooltip state changes:
+
+```vue
+<template>
+  <Tippy content="Hello!" @state="handleStateChange">
+    <button>Tippy!</button>
+  </Tippy>
+</template>
+
+<script setup>
+const handleStateChange = (state) => {
+  console.log('isEnabled:', state.isEnabled)
+  console.log('isVisible:', state.isVisible)
+  console.log('isMounted:', state.isMounted)
+  console.log('isShown:', state.isShown)
+  console.log('isDestroyed:', state.isDestroyed)
+}
+</script>
+```
+
+## Component instance
+
+Access the component instance using a template ref:
+
+```vue
+<template>
+  <Tippy ref="tippyRef" content="Hello!">
+    <button>Tippy!</button>
+  </Tippy>
+  <button @click="tippyRef.show()">Show tooltip</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const tippyRef = ref()
+</script>
+```
+
+The component instance exposes:
+- `tippy` - The Tippy.js instance
+- `state` - Reactive state object
+- `show()`, `hide()`, `enable()`, `disable()` - Control methods
+- `setContent()`, `setProps()` - Update methods
+- `destroy()`, `mount()`, `unmount()` - Lifecycle methods
+
+## Singleton
+
+Group multiple tooltips together with singleton behavior:
+
+```vue
+<template>
+  <TippySingleton move-transition="transform 0.2s ease-out" placement="top">
+    <Tippy content="First tooltip">
+      <button>Button 1</button>
+    </Tippy>
+
+    <Tippy content="Second tooltip">
+      <button>Button 2</button>
+    </Tippy>
+
+    <Tippy content="Third tooltip">
+      <button>Button 3</button>
+    </Tippy>
+  </TippySingleton>
+</template>
+```
+
+<Note>
+Singleton creates a smooth transition effect when moving between tooltips in the group.
+</Note>
+
+## Best practices
+
+<Note>
+Use the component approach when you need:
+- Complex HTML content in tooltips
+- Interactive elements within tooltips
+- Access to reactive state
+- Programmatic control via refs
+</Note>
+
+<Warning>
+For simple string tooltips, consider using the [directive](/usage/directive) for better performance.
+</Warning>

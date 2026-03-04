@@ -1,0 +1,191 @@
+---
+title: Animations
+description: Add smooth animations and transitions to your tooltips with built-in or custom effects
+---
+
+Tippies use an opacity `fade` transition by default.
+
+## Built-in animations
+
+VueTippy comes with several pre-built animations:
+
+- `shift-away`
+- `shift-toward`
+- `scale`
+- `perspective`
+
+Animations need to be imported separately:
+
+```js
+import 'tippy.js/animations/scale.css'
+```
+
+Pass the animation name as the `animation` prop:
+
+<CodeGroup>
+```js Composable
+import { useTippy } from 'vue-tippy'
+
+useTippy(target, {
+  animation: 'scale',
+})
+```
+
+```vue Directive
+<template>
+  <button v-tippy="{ content: 'Hello!', animation: 'scale' }">
+    Hover me
+  </button>
+</template>
+```
+</CodeGroup>
+
+## Animation variants
+
+Each animation has 3 variants (normal, subtle, and extreme):
+
+```js
+import 'tippy.js/animations/scale.css'
+import 'tippy.js/animations/scale-subtle.css'
+import 'tippy.js/animations/scale-extreme.css'
+```
+
+<Tabs>
+  <Tab title="Normal">
+    Standard animation effect with balanced motion.
+    
+    ```js
+    import 'tippy.js/animations/scale.css'
+    
+    useTippy(target, {
+      animation: 'scale',
+    })
+    ```
+  </Tab>
+  <Tab title="Subtle">
+    Gentler animation with reduced motion.
+    
+    ```js
+    import 'tippy.js/animations/scale-subtle.css'
+    
+    useTippy(target, {
+      animation: 'scale-subtle',
+    })
+    ```
+  </Tab>
+  <Tab title="Extreme">
+    More pronounced animation with exaggerated motion.
+    
+    ```js
+    import 'tippy.js/animations/scale-extreme.css'
+    
+    useTippy(target, {
+      animation: 'scale-extreme',
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Custom animations
+
+Create your own animations by targeting the animation name and visibility state:
+
+- Specify the animation name in the `[data-animation]` attribute selector
+- Target the visibility state: `[data-state="hidden"]` or `[data-state="visible"]`
+- Optionally target the placement: e.g., `[data-placement^="top"]`
+
+```css
+.tippy-box[data-animation='rotate'][data-state='hidden'] {
+  opacity: 0;
+  transform: rotate(90deg);
+}
+```
+
+Apply your custom animation:
+
+```js
+useTippy(target, {
+  animation: 'rotate',
+})
+```
+
+## Inertia prop
+
+The `inertia` prop adds an elastic inertial effect to the tippy, providing a limited CSS-only way to mimic spring physics:
+
+```js
+useTippy(target, {
+  inertia: true,
+})
+```
+
+Customize the inertia effect in your CSS:
+
+```css
+.tippy-box[data-inertia][data-state='visible'] {
+  transition-timing-function: cubic-bezier(...);
+}
+```
+
+<Info>
+  The `inertia` prop creates a spring-like effect that makes the animation feel more natural and responsive.
+</Info>
+
+## Material filling effect (animateFill)
+
+Create a Material Design-style filling effect by importing the required stylesheets:
+
+```js
+import 'tippy.js/dist/backdrop.css'
+import 'tippy.js/animations/shift-away.css'
+
+useTippy(target, {
+  animateFill: true,
+})
+```
+
+<Warning>
+  The `animateFill` prop requires both the `backdrop.css` and `shift-away.css` stylesheets to work properly.
+</Warning>
+
+## CSS animations with keyframes
+
+For more complex animations beyond transitions, you can use CSS animations like `animate.css`:
+
+```js
+useTippy(target, {
+  onMount(instance) {
+    const box = instance.popper.firstElementChild
+    requestAnimationFrame(() => {
+      box.classList.add('animated')
+      box.classList.add('wobble')
+    })
+  },
+  onHidden(instance) {
+    const box = instance.popper.firstElementChild
+    box.classList.remove('animated')
+    box.classList.remove('wobble')
+  },
+})
+```
+
+You can also use `@keyframes` and add the animation property to your `animation` selector:
+
+```css
+@keyframes customBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.tippy-box[data-animation='customBounce'][data-state='visible'] {
+  animation: customBounce 0.5s ease-out;
+}
+```
+
+<Note>
+  When using lifecycle callbacks like `onMount` and `onHidden`, use `requestAnimationFrame` to ensure the animation classes are applied after the element is rendered.
+</Note>

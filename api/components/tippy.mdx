@@ -1,0 +1,435 @@
+---
+title: Tippy component
+description: Vue component for creating interactive tooltips and popovers with Tippy.js
+---
+
+The `<Tippy>` component provides a high-level, declarative interface for creating tooltips in Vue applications. It supports all Tippy.js options and adds Vue-specific features like slots and reactive props.
+
+## Basic usage
+
+```vue
+<template>
+  <Tippy content="Hello, world!">
+    <button>Hover me</button>
+  </Tippy>
+</template>
+```
+
+## Props
+
+### Component-specific props
+
+<ParamField path="to" type="string | Element">
+  Target element selector or element instance. Special value `"parent"` attaches the tooltip to the parent element.
+  
+  ```vue
+  <!-- Attach to parent element -->
+  <button>
+    <Tippy to="parent" content="Tooltip on button">
+      Click me
+    </Tippy>
+  </button>
+  
+  <!-- Attach to element by selector -->
+  <Tippy to="#my-element" content="Tooltip">
+    <span>Trigger</span>
+  </Tippy>
+  ```
+</ParamField>
+
+<ParamField path="tag" type="string | Object | null" default="span">
+  HTML tag to wrap the trigger element. Set to `null` to mount directly on the child element.
+  
+  ```vue
+  <!-- Default span wrapper -->
+  <Tippy content="Hi!">
+    <button>Click</button>
+  </Tippy>
+  
+  <!-- No wrapper, mount on child -->
+  <Tippy content="Hi!" :tag="null">
+    <button>Click</button>
+  </Tippy>
+  ```
+</ParamField>
+
+<ParamField path="contentTag" type="string | Object" default="span">
+  HTML tag to wrap the tooltip content when using the content slot.
+</ParamField>
+
+<ParamField path="contentClass" type="string" default="null">
+  CSS class to apply to the content wrapper element.
+  
+  ```vue
+  <Tippy content-tag="div" content-class="custom-tooltip">
+    <template #default>Trigger</template>
+    <template #content>Custom styled content</template>
+  </Tippy>
+  ```
+</ParamField>
+
+### Tippy.js props
+
+All [Tippy.js props](https://atomiks.github.io/tippyjs/v6/all-props/) are supported. Here are the most commonly used:
+
+<ParamField path="content" type="string | Element | Function">
+  The tooltip content. Can be a string, DOM element, or function returning an element.
+</ParamField>
+
+<ParamField path="placement" type="string" default="top">
+  Preferred placement of the tooltip. Options: `top`, `bottom`, `left`, `right`, `auto`, and variations with `-start` and `-end` suffixes.
+</ParamField>
+
+<ParamField path="arrow" type="boolean | string | Element" default="true">
+  Whether to show an arrow pointing to the reference element.
+</ParamField>
+
+<ParamField path="interactive" type="boolean" default="false">
+  Makes the tooltip interactive, allowing mouse events inside it without hiding.
+  
+  ```vue
+  <Tippy interactive :hide-on-click="false">
+    <button>Click me</button>
+    <template #content="{ hide }">
+      <div>
+        Interactive content
+        <button @click="hide()">Close</button>
+      </div>
+    </template>
+  </Tippy>
+  ```
+</ParamField>
+
+<ParamField path="trigger" type="string" default="mouseenter focus">
+  Event(s) that trigger the tooltip. Options: `mouseenter`, `focus`, `click`, `manual`, or space-separated combinations.
+</ParamField>
+
+<ParamField path="animation" type="string | false" default="fade">
+  The animation to use. Can be `fade`, `shift-away`, `shift-toward`, `scale`, `perspective`, or `false` to disable.
+</ParamField>
+
+<ParamField path="theme" type="string" default="''">
+  Custom theme name for styling the tooltip.
+</ParamField>
+
+<ParamField path="delay" type="number | [number, number]" default="0">
+  Delay in milliseconds before showing/hiding. Can be a single number or `[show, hide]` tuple.
+</ParamField>
+
+<ParamField path="duration" type="number | [number, number]" default="[300, 250]">
+  Duration of the animation in milliseconds. Can be a single number or `[show, hide]` tuple.
+</ParamField>
+
+<ParamField path="hideOnClick" type="boolean | 'toggle'" default="true">
+  Whether to hide the tooltip on click. `'toggle'` will hide/show on each click.
+</ParamField>
+
+<ParamField path="maxWidth" type="number | string" default="350">
+  Maximum width of the tooltip in pixels or CSS unit.
+</ParamField>
+
+<ParamField path="offset" type="[number, number]" default="[0, 10]">
+  Offset of the tooltip from the reference element as `[skidding, distance]`.
+</ParamField>
+
+<ParamField path="allowHTML" type="boolean" default="false">
+  Whether to allow HTML content in the tooltip.
+</ParamField>
+
+<ParamField path="appendTo" type="Element | Function" default="document.body">
+  The element to append the tooltip to.
+</ParamField>
+
+<ParamField path="followCursor" type="boolean | 'horizontal' | 'vertical' | 'initial'" default="false">
+  Makes the tooltip follow the mouse cursor.
+</ParamField>
+
+<ParamField path="inlinePositioning" type="boolean" default="false">
+  Enables positioning optimized for inline elements.
+</ParamField>
+
+<ParamField path="sticky" type="boolean | 'reference' | 'popper'" default="false">
+  Ensures the tooltip stays stuck to the reference element if it moves.
+</ParamField>
+
+<ParamField path="zIndex" type="number" default="9999">
+  The z-index of the tooltip.
+</ParamField>
+
+<ParamField path="touch" type="boolean | string | [string, number]" default="true">
+  Behavior on touch devices. Options: `true`, `false`, `'hold'`, or `['hold', duration]`.
+</ParamField>
+
+<ParamField path="showOnCreate" type="boolean" default="false">
+  Whether to show the tooltip immediately when created.
+</ParamField>
+
+## Slots
+
+### default
+
+The default slot contains the trigger element(s) for the tooltip.
+
+```vue
+<Tippy content="Tooltip text">
+  <button>Hover me</button>
+</Tippy>
+```
+
+The slot receives the component's exposed properties:
+
+```vue
+<Tippy>
+  <template #default="{ state, show, hide }">
+    <button @click="show">
+      {{ state.isVisible ? 'Hide' : 'Show' }} tooltip
+    </button>
+  </template>
+  <template #content>Tooltip content</template>
+</Tippy>
+```
+
+### content
+
+The content slot allows you to provide custom Vue components as tooltip content.
+
+```vue
+<Tippy>
+  <button>Click me</button>
+  <template #content="{ hide }">
+    <div>
+      <h3>Custom Content</h3>
+      <p>This can contain any Vue template</p>
+      <button @click="hide()">Close</button>
+    </div>
+  </template>
+</Tippy>
+```
+
+The slot receives the component's exposed properties including `hide()`, `show()`, and `state`.
+
+## Events
+
+<ParamField path="@state" type="(state: TippyState) => void">
+  Emitted whenever the tippy state changes. The state includes:
+  - `isEnabled: boolean` - Whether the tippy is enabled
+  - `isVisible: boolean` - Whether the tippy is currently visible
+  - `isDestroyed: boolean` - Whether the tippy has been destroyed
+  - `isMounted: boolean` - Whether the tippy is mounted
+  - `isShown: boolean` - Whether the tippy is shown
+</ParamField>
+
+```vue
+<Tippy @state="onStateChange">
+  <template #default="{ state }">
+    <button>Status: {{ state.isVisible ? 'visible' : 'hidden' }}</button>
+  </template>
+  <template #content>Tooltip</template>
+</Tippy>
+
+<script setup>
+const onStateChange = (state) => {
+  console.log('Tooltip state:', state)
+}
+</script>
+```
+
+## Lifecycle hooks
+
+Tippy.js lifecycle hooks can be passed as props:
+
+<ParamField path="onCreate" type="(instance: Instance) => void">
+  Called when the tippy instance is created.
+</ParamField>
+
+<ParamField path="onShow" type="(instance: Instance) => void | false">
+  Called before the tippy begins to show. Return `false` to prevent showing.
+</ParamField>
+
+<ParamField path="onMount" type="(instance: Instance) => void">
+  Called when the tippy is mounted to the DOM.
+</ParamField>
+
+<ParamField path="onShown" type="(instance: Instance) => void">
+  Called after the tippy has fully transitioned in.
+</ParamField>
+
+<ParamField path="onHide" type="(instance: Instance) => void | false">
+  Called before the tippy begins to hide. Return `false` to prevent hiding.
+</ParamField>
+
+<ParamField path="onHidden" type="(instance: Instance) => void">
+  Called after the tippy has fully transitioned out.
+</ParamField>
+
+<ParamField path="onDestroy" type="(instance: Instance) => void">
+  Called when the tippy instance is destroyed.
+</ParamField>
+
+<ParamField path="onTrigger" type="(instance: Instance, event: Event) => void">
+  Called when a trigger event occurs.
+</ParamField>
+
+<ParamField path="onUntrigger" type="(instance: Instance, event: Event) => void">
+  Called when an untrigger event occurs.
+</ParamField>
+
+<ParamField path="onClickOutside" type="(instance: Instance, event: Event) => void">
+  Called when the user clicks outside of the interactive tooltip.
+</ParamField>
+
+<ParamField path="onBeforeUpdate" type="(instance: Instance, partialProps: Partial<Props>) => void">
+  Called before props are updated.
+</ParamField>
+
+<ParamField path="onAfterUpdate" type="(instance: Instance, partialProps: Partial<Props>) => void">
+  Called after props are updated.
+</ParamField>
+
+## Template refs
+
+You can access the tippy instance and methods using template refs:
+
+```vue
+<template>
+  <Tippy ref="tippyRef">
+    <button @click="toggleTooltip">Toggle</button>
+    <template #content>Tooltip content</template>
+  </Tippy>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const tippyRef = ref()
+
+const toggleTooltip = () => {
+  if (tippyRef.value.state.isVisible) {
+    tippyRef.value.hide()
+  } else {
+    tippyRef.value.show()
+  }
+}
+</script>
+```
+
+Exposed properties:
+- `tippy` - The Tippy.js instance
+- `state` - Reactive state object
+- `show()` - Method to show the tooltip
+- `hide()` - Method to hide the tooltip
+- `disable()` - Method to disable the tooltip
+- `enable()` - Method to enable the tooltip
+- `destroy()` - Method to destroy the tooltip
+- `setContent()` - Method to update the content
+- `setProps()` - Method to update props
+- `elem` - Reference to the trigger element
+- `contentElem` - Reference to the content element
+- `mounted` - Whether the component is mounted
+
+## Examples
+
+### Interactive tooltip with close button
+
+```vue
+<Tippy 
+  arrow
+  interactive
+  :hide-on-click="false"
+  trigger="click"
+>
+  <button>Open tooltip</button>
+  <template #content="{ hide }">
+    <div style="padding: 12px;">
+      <h3>Interactive Tooltip</h3>
+      <p>You can interact with this content!</p>
+      <button @click="hide()">Close</button>
+    </div>
+  </template>
+</Tippy>
+```
+
+### Custom wrapper tags
+
+```vue
+<Tippy 
+  tag="button" 
+  content-tag="div" 
+  content-class="custom-tooltip-content"
+>
+  <template #default>Click me</template>
+  <template #content>
+    <p>Custom styled content</p>
+  </template>
+</Tippy>
+```
+
+### Attach to parent element
+
+```vue
+<button>
+  <Tippy 
+    to="parent" 
+    content="This tooltip is attached to the button"
+  >
+    <!-- Content in default slot becomes tooltip content when to="parent" -->
+    Click me
+  </Tippy>
+</button>
+```
+
+### Mount on child without wrapper
+
+```vue
+<Tippy content="No wrapper div" :tag="null">
+  <button>Hover me</button>
+</Tippy>
+```
+
+### Programmatic control
+
+```vue
+<template>
+  <div>
+    <Tippy ref="tooltipRef" trigger="manual">
+      <button>Controlled tooltip</button>
+      <template #content>Programmatically controlled</template>
+    </Tippy>
+    
+    <button @click="tooltipRef?.show()">Show</button>
+    <button @click="tooltipRef?.hide()">Hide</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+
+const tooltipRef = ref()
+</script>
+```
+
+### Follow cursor
+
+```vue
+<Tippy 
+  content="I follow your cursor!" 
+  :follow-cursor="true"
+  :animation="false"
+>
+  <div style="padding: 40px; border: 1px solid #ccc;">
+    Hover anywhere in this box
+  </div>
+</Tippy>
+```
+
+### Delay and duration
+
+```vue
+<Tippy 
+  content="I appear slowly" 
+  :delay="[1000, 0]"
+  :duration="[500, 200]"
+>
+  <button>Hover me (1s delay)</button>
+</Tippy>
+```

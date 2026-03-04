@@ -1,0 +1,367 @@
+---
+title: Trigger target
+description: Separate the element that triggers the tooltip from the element it's positioned against for advanced layout scenarios.
+---
+
+The `triggerTarget` prop allows you to separate the trigger element from the positioning reference. This is useful when you want one element to trigger the tooltip while positioning it relative to a different element.
+
+## Basic usage
+
+Specify a different element as the trigger while keeping the tooltip positioned relative to the reference:
+
+```vue
+<template>
+  <div>
+    <button ref="trigger">Hover me to show tooltip</button>
+    
+    <div ref="position" class="tooltip-anchor">
+      Tooltip appears here
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const trigger = ref()
+const position = ref()
+
+useTippy(position, {
+  content: 'This tooltip is triggered by the button but positioned here',
+  triggerTarget: trigger,
+})
+</script>
+```
+
+## Using with component
+
+```vue
+<template>
+  <div>
+    <button ref="triggerBtn">Trigger</button>
+    
+    <Tippy 
+      ref="tooltip"
+      content="Positioned separately"
+      :trigger-target="triggerBtn"
+    >
+      <div class="position-target">
+        Tooltip positions here
+      </div>
+    </Tippy>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { Tippy } from 'vue-tippy'
+
+const triggerBtn = ref()
+const tooltip = ref()
+</script>
+```
+
+## Multiple triggers for one tooltip
+
+You can pass an array of elements to trigger from multiple sources:
+
+```vue
+<template>
+  <div>
+    <button :ref="el => triggers.push(el)">Trigger 1</button>
+    <button :ref="el => triggers.push(el)">Trigger 2</button>
+    <button :ref="el => triggers.push(el)">Trigger 3</button>
+    
+    <div ref="position" class="tooltip-location">
+      Tooltip always appears here
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const triggers = ref([])
+const position = ref()
+
+useTippy(position, {
+  content: 'Triggered by any button, positioned at the div',
+  triggerTarget: triggers,
+})
+</script>
+```
+
+## Use cases
+
+### Toolbar with icon position
+
+Show tooltip near an icon when hovering over the entire button:
+
+```vue
+<template>
+  <button ref="button" class="toolbar-btn">
+    <span ref="icon" class="icon">⚙️</span>
+    <span>Settings</span>
+  </button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const button = ref()
+const icon = ref()
+
+useTippy(icon, {
+  content: 'Configure application settings',
+  triggerTarget: button,
+  placement: 'right',
+})
+</script>
+```
+
+### Form field with label trigger
+
+Trigger tooltip from label but position it near the input:
+
+```vue
+<template>
+  <div class="form-field">
+    <label ref="label">
+      Email Address
+      <span class="info-icon">ℹ️</span>
+    </label>
+    
+    <input 
+      ref="input" 
+      type="email" 
+      placeholder="you@example.com"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const label = ref()
+const input = ref()
+
+useTippy(input, {
+  content: 'We will never share your email address',
+  triggerTarget: label,
+  trigger: 'mouseenter',
+  placement: 'right',
+})
+</script>
+```
+
+### Navigation with submenu positioning
+
+```vue
+<template>
+  <nav>
+    <button 
+      ref="menuBtn"
+      @click="toggleMenu"
+      class="menu-button"
+    >
+      Menu
+    </button>
+    
+    <div ref="menuAnchor" class="menu-anchor"></div>
+  </nav>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const menuBtn = ref()
+const menuAnchor = ref()
+
+const { tippy } = useTippy(menuAnchor, {
+  content: `
+    <ul class="menu">
+      <li>Profile</li>
+      <li>Settings</li>
+      <li>Logout</li>
+    </ul>
+  `,
+  triggerTarget: menuBtn,
+  trigger: 'click',
+  interactive: true,
+  allowHTML: true,
+  placement: 'bottom-start',
+})
+
+const toggleMenu = () => {
+  if (tippy.value.state.isVisible) {
+    tippy.value.hide()
+  } else {
+    tippy.value.show()
+  }
+}
+</script>
+```
+
+## Advanced: Dynamic trigger targets
+
+Change the trigger target dynamically using `setProps`:
+
+```vue
+<template>
+  <div>
+    <div class="triggers">
+      <button 
+        v-for="btn in buttons" 
+        :key="btn.id"
+        :ref="el => buttonRefs[btn.id] = el"
+        @click="setActiveTrigger(btn.id)"
+      >
+        {{ btn.label }}
+      </button>
+    </div>
+    
+    <div ref="tooltip" class="tooltip-target">
+      Tooltip target
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttons = [
+  { id: 1, label: 'Button 1' },
+  { id: 2, label: 'Button 2' },
+  { id: 3, label: 'Button 3' },
+]
+
+const buttonRefs = reactive({})
+const tooltip = ref()
+
+const { setProps } = useTippy(tooltip, {
+  content: 'Hover a button',
+  triggerTarget: null,
+})
+
+const setActiveTrigger = (id) => {
+  setProps({
+    triggerTarget: buttonRefs[id],
+    content: `Triggered by Button ${id}`,
+  })
+}
+</script>
+```
+
+## Type definition
+
+From the source code types:
+
+```typescript
+// From src/types/index.ts
+export declare type TippyTarget =
+  | Element
+  | Element[]
+  | Ref<Element | undefined>
+  | Ref<Element[] | undefined>
+  | null
+
+export declare type TippyOptions = Partial<
+  Omit<Props, 'content' | 'triggerTarget'> & {
+    triggerTarget: TippyTarget
+  }
+>
+```
+
+## Configuration notes
+
+<Note>
+  - `triggerTarget` accepts a single element, array of elements, or refs
+  - The tooltip will still be positioned relative to the main reference element
+  - Event listeners are attached to the trigger target, not the reference
+  - You can update `triggerTarget` dynamically with `setProps`
+</Note>
+
+## Common patterns
+
+<Tabs>
+  <Tab title="Icon + Label">
+    Trigger from the whole button, position at the icon:
+    ```vue
+    <button ref="btn">
+      <span ref="icon">🔧</span> Settings
+    </button>
+    
+    <script setup>
+    useTippy(icon, {
+      triggerTarget: btn,
+      content: 'Settings'
+    })
+    </script>
+    ```
+  </Tab>
+  
+  <Tab title="Hidden Anchor">
+    Use an invisible anchor for positioning:
+    ```vue
+    <div>
+      <button ref="trigger">Hover me</button>
+      <span ref="anchor" style="position: absolute; left: 100px;"></span>
+    </div>
+    
+    <script setup>
+    useTippy(anchor, {
+      triggerTarget: trigger,
+      content: 'Fixed position'
+    })
+    </script>
+    ```
+  </Tab>
+  
+  <Tab title="Multiple Triggers">
+    Multiple elements trigger one positioned tooltip:
+    ```vue
+    <div>
+      <button :ref="el => triggers.push(el)">A</button>
+      <button :ref="el => triggers.push(el)">B</button>
+      <div ref="target">Tooltip here</div>
+    </div>
+    
+    <script setup>
+    const triggers = ref([])
+    useTippy(target, {
+      triggerTarget: triggers,
+      content: 'Shared tooltip'
+    })
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  When using `triggerTarget` with refs, ensure the elements are mounted before initializing the tooltip. Use `onMounted` or the composable's built-in lifecycle handling.
+</Warning>
+
+## Combining with other features
+
+You can combine `triggerTarget` with other advanced features:
+
+```vue
+<script setup>
+useTippy(position, {
+  triggerTarget: trigger,
+  followCursor: true,  // Follow cursor on trigger element
+  interactive: true,   // Make tooltip interactive
+  placement: 'top',    // Position relative to position element
+})
+</script>
+```
+
+<Info>
+  For more details on trigger behavior, see the [Tippy.js documentation on triggerTarget](https://atomiks.github.io/tippyjs/v6/all-props/#triggertarget).
+</Info>

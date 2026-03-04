@@ -1,0 +1,410 @@
+---
+title: Composition API
+description: Use the useTippy composable for low-level, flexible tooltip creation with full programmatic control
+---
+
+The `useTippy` composable provides the most flexible and powerful way to work with tooltips in Vue 3. It's ideal for complex interactions, dynamic content, and programmatic control.
+
+## Basic usage
+
+Create a tooltip by passing a template ref and options to `useTippy`:
+
+```vue
+<template>
+  <button ref="buttonRef">Tippy!</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+useTippy(buttonRef, {
+  content: 'Hello!',
+})
+</script>
+```
+
+## Return value
+
+The `useTippy` composable returns an object with methods and reactive state:
+
+```vue
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+const {
+  tippy,           // Ref<Instance> - The Tippy.js instance
+  state,           // Reactive state object
+  refresh,         // () => void - Refresh all props
+  refreshContent,  // () => void - Refresh content only
+  setContent,      // (content) => void - Update content
+  setProps,        // (props) => void - Update props
+  destroy,         // () => void - Destroy instance
+  hide,            // () => void - Hide tooltip
+  show,            // () => void - Show tooltip
+  disable,         // () => void - Disable tooltip
+  enable,          // () => void - Enable tooltip
+  unmount,         // () => void - Unmount tooltip
+  mount,           // () => void - Mount tooltip
+} = useTippy(buttonRef, {
+  content: 'Hello!',
+  arrow: true,
+})
+</script>
+```
+
+## Reactive state
+
+The `state` object is reactive and contains the current tooltip state:
+
+```vue
+<template>
+  <div>
+    <button ref="buttonRef">Hover me</button>
+    <div>
+      <p>isEnabled: {{ state.isEnabled }}</p>
+      <p>isVisible: {{ state.isVisible }}</p>
+      <p>isMounted: {{ state.isMounted }}</p>
+      <p>isShown: {{ state.isShown }}</p>
+      <p>isDestroyed: {{ state.isDestroyed }}</p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+const { state } = useTippy(buttonRef, {
+  content: 'Hello!',
+})
+</script>
+```
+
+## Reactive content
+
+Pass a reactive ref as content, and the tooltip will automatically update:
+
+```vue
+<template>
+  <div>
+    <button ref="buttonRef">Hover me</button>
+    <button @click="updateContent">Update Content</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+const tooltipContent = ref('Initial content')
+
+useTippy(buttonRef, {
+  content: tooltipContent,
+  arrow: true,
+})
+
+const updateContent = () => {
+  tooltipContent.value = 'Updated content!'
+}
+</script>
+```
+
+<Note>
+The composable automatically watches reactive refs and updates the tooltip when they change.
+</Note>
+
+## Vue component content
+
+You can use Vue components as tooltip content in two ways:
+
+### Using component definition
+
+```vue
+<template>
+  <button ref="buttonRef">Tippy!</button>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+import Counter from '@/components/Counter.vue'
+
+const buttonRef = ref()
+
+useTippy(buttonRef, {
+  content: Counter,
+  arrow: true,
+})
+</script>
+```
+
+### Using h() with props
+
+Use the `h` function to pass props to your component:
+
+```vue
+<template>
+  <button ref="buttonRef">Tippy!</button>
+</template>
+
+<script setup>
+import { ref, h } from 'vue'
+import { useTippy } from 'vue-tippy'
+import Counter from '@/components/Counter.vue'
+
+const buttonRef = ref()
+
+useTippy(buttonRef, {
+  content: h(Counter, { initialCount: 42 }),
+  arrow: true,
+  interactive: true,
+})
+</script>
+```
+
+<Note>
+When using Vue components as content, the composable automatically creates a headless Vue app to render them, preserving the component context.
+</Note>
+
+## Programmatic control
+
+Use the returned methods to control the tooltip programmatically:
+
+```vue
+<template>
+  <div>
+    <button ref="buttonRef">Tippy!</button>
+    <div class="controls">
+      <button @click="show()">Show</button>
+      <button @click="hide()">Hide</button>
+      <button @click="disable()">Disable</button>
+      <button @click="enable()">Enable</button>
+      <button @click="updateContent">Update Content</button>
+      <button @click="destroy()">Destroy</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+const {
+  show,
+  hide,
+  disable,
+  enable,
+  setContent,
+  destroy,
+} = useTippy(buttonRef, {
+  content: 'Hello!',
+})
+
+const updateContent = () => {
+  setContent('Updated content!')
+}
+</script>
+```
+
+## Dynamic target element
+
+You can use a function or reactive ref as the target:
+
+```vue
+<template>
+  <div>
+    <button ref="button1">Button 1</button>
+    <button ref="button2">Button 2</button>
+    <button @click="switchTarget">Switch Target</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const button1 = ref()
+const button2 = ref()
+const currentButton = ref(button1)
+
+const { mount } = useTippy(currentButton, {
+  content: 'Dynamic target',
+})
+
+const switchTarget = () => {
+  currentButton.value = currentButton.value === button1 ? button2 : button1
+  mount()
+}
+</script>
+```
+
+## Lazy mounting
+
+Disable automatic mounting and mount manually when needed:
+
+```vue
+<template>
+  <div>
+    <button ref="buttonRef">Hover me</button>
+    <button @click="mount()">Mount Tooltip</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+const { mount } = useTippy(
+  buttonRef,
+  {
+    content: 'Hello!',
+  },
+  {
+    mount: false, // Don't mount automatically
+  }
+)
+</script>
+```
+
+## Reactive options
+
+Pass a reactive object to automatically update all props:
+
+```vue
+<template>
+  <div>
+    <button ref="buttonRef">Hover me</button>
+    <button @click="toggleTheme">Toggle Theme</button>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const buttonRef = ref()
+
+const options = reactive({
+  content: 'Hello!',
+  theme: 'light',
+  arrow: true,
+})
+
+useTippy(buttonRef, options)
+
+const toggleTheme = () => {
+  options.theme = options.theme === 'light' ? 'dark' : 'light'
+}
+</script>
+```
+
+<Note>
+When passing a reactive object or ref, the composable automatically watches for changes and updates the tooltip.
+</Note>
+
+## Singleton
+
+Create a singleton to group multiple tooltips with smooth transitions:
+
+```vue
+<template>
+  <div>
+    <button ref="addButton" v-tippy="'Tooltip 1'">Button 1</button>
+    <button ref="addButton" v-tippy="'Tooltip 2'">Button 2</button>
+    <button ref="addButton" v-tippy="'Tooltip 3'">Button 3</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const buttons = ref([])
+
+const addButton = (el) => {
+  if (el && !buttons.value.includes(el)) {
+    buttons.value.push(el)
+  }
+}
+
+useSingleton(buttons, {
+  placement: 'top',
+  moveTransition: 'transform 0.2s ease-out',
+})
+</script>
+```
+
+## Type signature
+
+```typescript
+function useTippy(
+  el: Element | (() => Element) | Ref<Element | undefined>,
+  opts?: TippyOptions,
+  settings?: {
+    mount?: boolean
+    appName?: string
+  }
+): {
+  tippy: Ref<Instance | undefined>
+  state: Ref<{
+    isEnabled: boolean
+    isVisible: boolean
+    isDestroyed: boolean
+    isMounted: boolean
+    isShown: boolean
+  }>
+  refresh: () => void
+  refreshContent: () => void
+  setContent: (value: TippyContent) => void
+  setProps: (value: TippyOptions) => void
+  destroy: () => void
+  hide: () => void
+  show: () => void
+  disable: () => void
+  enable: () => void
+  unmount: () => void
+  mount: () => void
+}
+```
+
+## Best practices
+
+<Note>
+Use the Composition API when you need:
+- Full programmatic control over tooltips
+- Complex dynamic behavior
+- Integration with other composables
+- Vue components as content
+- Fine-grained lifecycle management
+</Note>
+
+<Warning>
+The composable automatically cleans up the tooltip when the component unmounts. If you're creating tooltips outside of components, make sure to call `destroy()` manually to prevent memory leaks.
+</Warning>
+
+## Advanced: Custom app context
+
+The composable automatically preserves the current component's app context when rendering Vue components. You can customize the app name for debugging:
+
+```vue
+<script setup>
+const { tippy } = useTippy(
+  buttonRef,
+  { content: MyComponent },
+  { appName: 'CustomTooltip' }
+)
+</script>
+```

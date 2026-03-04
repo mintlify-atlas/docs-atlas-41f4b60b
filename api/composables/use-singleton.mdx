@@ -1,0 +1,302 @@
+---
+title: useSingleton
+description: Create singleton tooltips that smoothly transition between multiple trigger elements
+---
+
+The `useSingleton` composable creates a singleton tooltip that can transition between multiple trigger elements. This provides a smooth UX when hovering over multiple elements with tooltips, as the same tooltip instance moves between them instead of hiding and showing different instances.
+
+## Signature
+
+```typescript
+function useSingleton(
+  instances: TippyInstances,
+  optionalProps?: Partial<CreateSingletonProps<Props>>
+): UseSingletonReturn
+```
+
+## Parameters
+
+<ParamField path="instances" type="TippyInstances" required>
+  The Tippy instances or elements to group into a singleton. Can be:
+  
+  - An array of refs to Tippy instances
+  - An array of DOM elements (must have `._tippy` property)
+  - A function that returns an array of instances
+  - A ref containing an array of instances
+  
+  ```typescript
+  type TippyInstances = 
+    | TippyInstance[]
+    | Ref<TippyInstance[]>
+    | (() => TippyInstance[])
+  ```
+</ParamField>
+
+<ParamField path="optionalProps" type="Partial<CreateSingletonProps>">
+  Configuration options for the singleton behavior. Common options include:
+  
+  <Expandable title="properties">
+    <ResponseField name="placement" type="string" default="'top'">
+      Default placement for the singleton tooltip
+    </ResponseField>
+    
+    <ResponseField name="moveTransition" type="string">
+      CSS transition for the tooltip movement between elements
+      
+      Example: `'transform 0.2s ease-out'`
+    </ResponseField>
+    
+    <ResponseField name="overrides" type="string[]">
+      Array of prop names that individual instances can override
+      
+      Example: `['placement', 'arrow']`
+    </ResponseField>
+    
+    <ResponseField name="allowHTML" type="boolean" default="true">
+      Whether to allow HTML content in the tooltip (enabled by default)
+    </ResponseField>
+  </Expandable>
+  
+  All standard [Tippy.js props](/api/props) are also supported.
+</ParamField>
+
+## Return value
+
+<ResponseField name="singleton" type="Ref<ReturnType<typeof createSingleton> | undefined>">
+  A ref to the singleton instance. This provides access to the underlying Tippy.js singleton instance for advanced control.
+  
+  The singleton will be `undefined` until the component is mounted and the singleton is created.
+</ResponseField>
+
+## Examples
+
+### Basic singleton with v-tippy directive
+
+```vue
+<template>
+  <div>
+    <button :ref="v => singletons.push(v)" v-tippy="'Tooltip 1'">
+      Button 1
+    </button>
+    <button :ref="v => singletons.push(v)" v-tippy="'Tooltip 2'">
+      Button 2
+    </button>
+    <button :ref="v => singletons.push(v)" v-tippy="'Tooltip 3'">
+      Button 3
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const singletons = ref([])
+
+useSingleton(singletons, {
+  placement: 'top',
+  moveTransition: 'transform 0.2s ease-out',
+})
+</script>
+```
+
+### With useTippy instances
+
+```vue
+<template>
+  <div>
+    <button ref="btn1">First</button>
+    <button ref="btn2">Second</button>
+    <button ref="btn3">Third</button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy, useSingleton } from 'vue-tippy'
+
+const btn1 = ref()
+const btn2 = ref()
+const btn3 = ref()
+
+const tippy1 = useTippy(btn1, { content: 'First tooltip' })
+const tippy2 = useTippy(btn2, { content: 'Second tooltip' })
+const tippy3 = useTippy(btn3, { content: 'Third tooltip' })
+
+useSingleton([tippy1.tippy, tippy2.tippy, tippy3.tippy], {
+  placement: 'bottom',
+  moveTransition: 'transform 0.15s ease-out',
+})
+</script>
+```
+
+### With custom transition
+
+```vue
+<template>
+  <div class="button-group">
+    <button
+      v-for="item in items"
+      :key="item.id"
+      :ref="v => singletons.push(v)"
+      v-tippy="item.tooltip"
+    >
+      {{ item.label }}
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const items = [
+  { id: 1, label: 'Save', tooltip: 'Save your changes' },
+  { id: 2, label: 'Delete', tooltip: 'Delete this item' },
+  { id: 3, label: 'Share', tooltip: 'Share with others' },
+]
+
+const singletons = ref([])
+
+useSingleton(singletons, {
+  placement: 'top',
+  moveTransition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  arrow: true,
+})
+</script>
+```
+
+### With overridable props
+
+```vue
+<template>
+  <div>
+    <button
+      :ref="v => elements.push(v)"
+      v-tippy="{ content: 'Top tooltip', placement: 'top' }"
+    >
+      Top
+    </button>
+    <button
+      :ref="v => elements.push(v)"
+      v-tippy="{ content: 'Right tooltip', placement: 'right' }"
+    >
+      Right
+    </button>
+    <button
+      :ref="v => elements.push(v)"
+      v-tippy="{ content: 'Bottom tooltip', placement: 'bottom' }"
+    >
+      Bottom
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const elements = ref([])
+
+useSingleton(elements, {
+  placement: 'top', // Default placement
+  overrides: ['placement'], // Allow individual instances to override placement
+  moveTransition: 'transform 0.2s ease-out',
+})
+</script>
+```
+
+### Dynamic instances
+
+```vue
+<template>
+  <div>
+    <button
+      v-for="(item, index) in items"
+      :key="item.id"
+      :ref="el => setRef(el, index)"
+      v-tippy="item.tooltip"
+    >
+      {{ item.name }}
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const items = ref([
+  { id: 1, name: 'Item 1', tooltip: 'First item' },
+  { id: 2, name: 'Item 2', tooltip: 'Second item' },
+  { id: 3, name: 'Item 3', tooltip: 'Third item' },
+])
+
+const elements = ref([])
+
+function setRef(el, index) {
+  if (el) {
+    elements.value[index] = el
+  }
+}
+
+useSingleton(elements, {
+  placement: 'top',
+  moveTransition: 'transform 0.2s ease-out',
+})
+</script>
+```
+
+### Accessing singleton instance
+
+```vue
+<template>
+  <div>
+    <button :ref="v => tips.push(v)" v-tippy="'Tooltip 1'">Button 1</button>
+    <button :ref="v => tips.push(v)" v-tippy="'Tooltip 2'">Button 2</button>
+    <button @click="showSingleton">Show singleton</button>
+    <button @click="hideSingleton">Hide singleton</button>
+  </div>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const tips = ref([])
+
+const { singleton } = useSingleton(tips, {
+  placement: 'top',
+})
+
+function showSingleton() {
+  singleton.value?.show()
+}
+
+function hideSingleton() {
+  singleton.value?.hide()
+}
+</script>
+```
+
+## How it works
+
+The singleton pattern works by:
+
+1. Creating a single tooltip instance that's shared across multiple trigger elements
+2. When hovering over a trigger element, the singleton moves to that element instead of creating a new tooltip
+3. This provides a smoother visual experience with seamless transitions
+4. Each trigger element can still have its own content and overridable props
+
+## Benefits
+
+- **Smoother UX**: Single tooltip transitions between elements instead of showing/hiding multiple tooltips
+- **Performance**: Only one tooltip instance in the DOM instead of multiple
+- **Consistent behavior**: All tooltips in the group share the same configuration
+- **Flexible overrides**: Individual elements can override specific props when needed
+
+## See also
+
+- [useTippy](/api/composables/use-tippy) - Create individual tooltip instances
+- [v-tippy directive](/usage/directive) - Directive for adding tooltips to elements
+- [Tippy.js Singleton](https://atomiks.github.io/tippyjs/v6/addons/#singleton) - Official Tippy.js singleton documentation

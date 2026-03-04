@@ -1,0 +1,211 @@
+---
+title: Follow cursor
+description: Make tooltips follow the user's cursor position for interactive hover effects and custom positioning.
+---
+
+The `followCursor` prop makes the tooltip follow the cursor as it moves over the reference element. This is useful for tooltips that need to track mouse movement.
+
+## Basic usage
+
+Set `followCursor` to `true` to enable cursor following:
+
+```vue
+<template>
+  <Tippy content="I follow your cursor!" :follow-cursor="true">
+    <div class="target-area">
+      Hover over me
+    </div>
+  </Tippy>
+</template>
+
+<script setup>
+import { Tippy } from 'vue-tippy'
+</script>
+```
+
+## Follow cursor modes
+
+The `followCursor` prop accepts different values:
+
+<Tabs>
+  <Tab title="Boolean">
+    ```vue
+    <Tippy 
+      content="Follows on both axes" 
+      :follow-cursor="true"
+    >
+      <div>Hover me</div>
+    </Tippy>
+    ```
+    Follows the cursor on both X and Y axes.
+  </Tab>
+  
+  <Tab title="Horizontal">
+    ```vue
+    <Tippy 
+      content="Follows horizontally only" 
+      follow-cursor="horizontal"
+    >
+      <div>Hover me</div>
+    </Tippy>
+    ```
+    Only follows the cursor horizontally.
+  </Tab>
+  
+  <Tab title="Vertical">
+    ```vue
+    <Tippy 
+      content="Follows vertically only" 
+      follow-cursor="vertical"
+    >
+      <div>Hover me</div>
+    </Tippy>
+    ```
+    Only follows the cursor vertically.
+  </Tab>
+  
+  <Tab title="Initial">
+    ```vue
+    <Tippy 
+      content="Positioned at initial cursor location" 
+      follow-cursor="initial"
+    >
+      <div>Hover me</div>
+    </Tippy>
+    ```
+    Positions the tooltip at the initial cursor position when entering, then stays fixed.
+  </Tab>
+</Tabs>
+
+## Using with directive
+
+```vue
+<template>
+  <div 
+    v-tippy="{ 
+      content: 'Following cursor', 
+      followCursor: true 
+    }"
+    class="large-area"
+  >
+    Move your cursor around
+  </div>
+</template>
+```
+
+## Using with composable
+
+```vue
+<template>
+  <div ref="target" class="tracking-area">
+    Move your cursor here
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+
+useTippy(target, {
+  content: 'Tracking your every move!',
+  followCursor: true,
+  plugins: [followCursor],
+})
+</script>
+```
+
+## Advanced: Custom cursor following
+
+Combine with `getReferenceClientRect` for custom positioning logic:
+
+```vue
+<template>
+  <div ref="target" @mousemove="handleMouseMove">
+    Custom cursor tracking
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+const mousePos = ref({ x: 0, y: 0 })
+
+const handleMouseMove = (e) => {
+  mousePos.value = { x: e.clientX, y: e.clientY }
+}
+
+useTippy(target, {
+  content: 'Custom position',
+  followCursor: true,
+  getReferenceClientRect: () => ({
+    width: 0,
+    height: 0,
+    top: mousePos.value.y,
+    bottom: mousePos.value.y,
+    left: mousePos.value.x,
+    right: mousePos.value.x,
+  }),
+})
+</script>
+```
+
+## Configuration options
+
+Combine `followCursor` with other props for enhanced behavior:
+
+```vue
+<Tippy
+  content="Smooth following"
+  :follow-cursor="true"
+  :offset="[0, 20]"
+  placement="top-start"
+  :duration="[200, 0]"
+  arrow
+>
+  <div class="interactive-zone">
+    Hover for smooth tracking
+  </div>
+</Tippy>
+```
+
+<Note>
+  When using `followCursor`, the `placement` prop becomes the preferred placement. The tooltip will flip if there's not enough space.
+</Note>
+
+## Use cases
+
+- **Image previews**: Show zoomed previews that follow the cursor
+- **Interactive maps**: Display coordinates or details at cursor position
+- **Data visualization**: Show data points as cursor moves over charts
+- **Color pickers**: Display color values as cursor moves over palette
+- **Large areas**: Improve UX for large hoverable regions
+
+## Performance considerations
+
+<Warning>
+  Following the cursor requires continuous updates on mouse movement. For better performance:
+  - Avoid complex content in the tooltip
+  - Use `duration: 0` to disable animations
+  - Consider throttling for very large tooltip content
+</Warning>
+
+## Plugin requirement
+
+The `followCursor` feature requires the followCursor plugin from Tippy.js:
+
+```javascript
+import { followCursor } from 'tippy.js'
+
+useTippy(target, {
+  followCursor: true,
+  plugins: [followCursor],
+})
+```
+
+<Info>
+  VueTippy automatically includes the followCursor plugin when you install it globally. You only need to import it manually when using the composable.
+</Info>

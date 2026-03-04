@@ -1,0 +1,275 @@
+---
+title: Utilities
+description: Utility functions and exports for VueTippy
+---
+
+VueTippy exports several utility functions and objects that provide additional functionality for working with tooltips.
+
+## tippy()
+
+The core tippy.js function for creating tooltip instances programmatically.
+
+```typescript
+function tippy(
+  targets: Element | Element[],
+  options?: TippyOptions
+): Instance | Instance[]
+```
+
+<ParamField path="targets" type="Element | Element[]" required>
+  The DOM element(s) to attach the tooltip to
+</ParamField>
+
+<ParamField path="options" type="TippyOptions">
+  Configuration options for the tooltip instance
+</ParamField>
+
+<ResponseField name="return" type="Instance | Instance[]">
+  Returns a tippy Instance or array of Instances
+</ResponseField>
+
+### Usage
+
+```javascript
+import { tippy } from 'vue-tippy'
+
+// Create a tooltip on a single element
+const button = document.querySelector('#my-button')
+const instance = tippy(button, {
+  content: 'Hello!',
+  placement: 'top',
+})
+
+// Create tooltips on multiple elements
+const buttons = document.querySelectorAll('.tooltip-btn')
+const instances = tippy(buttons, {
+  content: 'Click me',
+  arrow: true,
+})
+```
+
+## hideAll()
+
+Hides all visible tooltip instances on the page.
+
+```typescript
+function hideAll(options?: { 
+  exclude?: Instance | Element,
+  duration?: number 
+}): void
+```
+
+<ParamField path="options.exclude" type="Instance | Element">
+  A tooltip instance or element to exclude from being hidden
+</ParamField>
+
+<ParamField path="options.duration" type="number">
+  Custom duration for the hide animation in milliseconds
+</ParamField>
+
+### Usage
+
+```javascript
+import { hideAll } from 'vue-tippy'
+
+// Hide all tooltips
+hideAll()
+
+// Hide all except a specific instance
+hideAll({ exclude: myTippyInstance })
+
+// Hide all with custom duration
+hideAll({ duration: 0 }) // Instant hide
+```
+
+## setDefaultProps()
+
+Sets default props for all new tippy instances created after calling this function.
+
+```typescript
+function setDefaultProps(props: Partial<DefaultProps>): void
+```
+
+<ParamField path="props" type="Partial<DefaultProps>" required>
+  An object containing the default props to set
+</ParamField>
+
+### Usage
+
+```javascript
+import { setDefaultProps } from 'vue-tippy'
+
+setDefaultProps({
+  placement: 'bottom',
+  arrow: true,
+  animation: 'fade',
+  duration: [200, 150],
+  theme: 'custom',
+})
+```
+
+<Note>
+  VueTippy automatically sets some default props on initialization, including `ignoreAttributes: true` and several plugins. Using `setDefaultProps()` will merge your props with these defaults.
+</Note>
+
+## plugin
+
+The Vue plugin object for installing VueTippy into your Vue application.
+
+```typescript
+const plugin: Plugin
+```
+
+### Usage
+
+<Tabs>
+  <Tab title="App-wide installation">
+    ```javascript
+    import { createApp } from 'vue'
+    import { plugin as VueTippy } from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css'
+    
+    const app = createApp(App)
+    
+    app.use(VueTippy, {
+      directive: 'tippy',
+      component: 'tippy',
+      componentSingleton: 'tippy-singleton',
+      defaultProps: {
+        placement: 'top',
+        arrow: true,
+      },
+    })
+    ```
+  </Tab>
+  <Tab title="With options">
+    ```javascript
+    import { createApp } from 'vue'
+    import { plugin as VueTippy } from 'vue-tippy'
+    
+    const app = createApp(App)
+    
+    app.use(VueTippy, {
+      directive: 'tooltip', // Custom directive name
+      component: 'Tooltip', // Custom component name
+      defaultProps: {
+        theme: 'material',
+        animation: 'scale',
+      },
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Plugin options
+
+<ParamField path="directive" type="string" default="tippy">
+  The name of the directive to register
+</ParamField>
+
+<ParamField path="component" type="string" default="tippy">
+  The name of the Tippy component to register
+</ParamField>
+
+<ParamField path="componentSingleton" type="string" default="tippy-singleton">
+  The name of the TippySingleton component to register
+</ParamField>
+
+<ParamField path="defaultProps" type="Partial<DefaultProps>">
+  Default props to apply to all tooltip instances
+</ParamField>
+
+## directive
+
+The Vue directive object for using tooltips with the `v-tippy` directive.
+
+```typescript
+const directive: Directive
+```
+
+### Usage
+
+```vue
+<template>
+  <!-- String content -->
+  <button v-tippy="'Hello world'">Hover me</button>
+  
+  <!-- With options -->
+  <button v-tippy="{ content: 'Custom tooltip', placement: 'bottom' }">
+    Hover me
+  </button>
+  
+  <!-- With modifiers -->
+  <button v-tippy.bottom.arrow="'Tooltip with arrow'">
+    Hover me
+  </button>
+</template>
+
+<script setup>
+import { directive as vTippy } from 'vue-tippy'
+</script>
+```
+
+### Directive modifiers
+
+<ParamField path="placement" type="string">
+  Any valid placement value (top, bottom, left, right, etc.) can be used as a modifier
+</ParamField>
+
+<ParamField path="arrow" type="boolean">
+  Adding `.arrow` as a modifier will display an arrow
+</ParamField>
+
+### Lifecycle hooks
+
+The directive supports lifecycle hooks through component props:
+
+```vue
+<button 
+  v-tippy="'Hello'"
+  @tippy-show="onShow"
+  @tippy-shown="onShown"
+  @tippy-hide="onHide"
+  @tippy-hidden="onHidden"
+  @tippy-mount="onMount"
+>
+  Hover me
+</button>
+```
+
+## roundArrow
+
+An SVG string representing a rounded arrow for tooltips.
+
+```typescript
+const roundArrow: string
+```
+
+### Usage
+
+```javascript
+import { tippy, roundArrow } from 'vue-tippy'
+
+tippy('#my-element', {
+  content: 'Tooltip with round arrow',
+  arrow: roundArrow,
+})
+```
+
+Or with the component:
+
+```vue
+<template>
+  <Tippy content="Round arrow!" :arrow="roundArrow">
+    <button>Hover me</button>
+  </Tippy>
+</template>
+
+<script setup>
+import { Tippy, roundArrow } from 'vue-tippy'
+</script>
+```
+
+<Note>
+  The `roundArrow` export is re-exported from tippy.js. You can also use custom SVG strings for completely custom arrow shapes.
+</Note>

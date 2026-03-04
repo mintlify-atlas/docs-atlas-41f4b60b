@@ -1,0 +1,264 @@
+---
+title: Themes
+description: Style your tooltips with built-in themes or create custom themes with CSS
+---
+
+Tippies can have any custom styling via CSS.
+
+## Base style
+
+Import the base Tippy.js CSS to get started:
+
+```js
+import 'tippy.js/dist/tippy.css'
+```
+
+## Built-in themes
+
+VueTippy comes with several pre-built themes:
+
+- `light`
+- `light-border`
+- `material`
+- `translucent`
+
+Themes need to be imported separately:
+
+```js
+import 'tippy.js/themes/light.css'
+```
+
+Pass the theme name as the `theme` prop:
+
+<CodeGroup>
+```js Composable
+import { useTippy } from 'vue-tippy'
+
+useTippy(target, {
+  theme: 'light',
+})
+```
+
+```vue Directive
+<template>
+  <button v-tippy="{ content: 'Hello!', theme: 'light' }">
+    Hover me
+  </button>
+</template>
+```
+</CodeGroup>
+
+## Tippy element structure
+
+To create custom themes, it's helpful to understand the basic structure of a tippy element:
+
+```html
+<div data-tippy-root>
+  <div class="tippy-box" data-placement="top">
+    <div class="tippy-content">
+      My content
+    </div>
+  </div>
+</div>
+```
+
+A tippy is essentially three nested `div`s:
+
+- `[data-tippy-root]` - The outermost node used by Popper for positioning. No styling needed.
+- `.tippy-box` - The actual box node.
+- `.tippy-content` - The content node.
+
+Depending on the props supplied, there may be additional elements:
+
+```html
+<div data-tippy-root>
+  <div class="tippy-box" data-placement="top">
+    <div class="tippy-backdrop"></div> <!-- animateFill: true -->
+    <div class="tippy-arrow"></div> <!-- arrow: true -->
+    <div class="tippy-content">
+      My content
+    </div>
+  </div>
+</div>
+```
+
+## Creating custom themes
+
+Themes are created by including a class on the `tippy-box` element using the selector pattern `.tippy-box[data-theme~='theme']`.
+
+Here's an example creating a custom `tomato` theme:
+
+```css
+.tippy-box[data-theme~='tomato'] {
+  background-color: tomato;
+  color: yellow;
+}
+```
+
+Apply the theme:
+
+```js
+useTippy(target, {
+  theme: 'tomato',
+})
+```
+
+### Using scoped styles in Vue components
+
+<CodeGroup>
+```vue Component with scoped styles
+<template>
+  <div>
+    <button
+      v-tippy="{ 
+         content: 'Hi!', 
+         appendTo: 'parent', 
+         theme: 'tomato',
+         arrow: false
+      }"
+    >
+      Hello!
+    </button>
+  </div>
+</template>
+
+<script>
+  export default {}
+</script>
+
+<style scoped>
+  * >>> .tippy-box[data-theme~='tomato'] {
+    background-color: tomato;
+    color: yellow;
+  }
+</style>
+```
+</CodeGroup>
+
+<Info>
+  **What is `~=`?**
+  
+  Since `theme` can have multiple names, it allows you to target a single theme inside the space-separated list. Learn more on [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors).
+</Info>
+
+## Styling arrows
+
+There are two types of arrows you can style:
+
+- CSS arrows (using `border-width`)
+- SVG arrows (using an `<svg>` element)
+
+### CSS arrow
+
+To style the default CSS arrow, target each placement direction and apply styles to the `.tippy-arrow::before` pseudo-element:
+
+```css
+.tippy-box[data-theme~='tomato'][data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: tomato;
+}
+.tippy-box[data-theme~='tomato'][data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: tomato;
+}
+.tippy-box[data-theme~='tomato'][data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: tomato;
+}
+.tippy-box[data-theme~='tomato'][data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: tomato;
+}
+```
+
+### SVG arrow
+
+First, import the SVG arrow stylesheet:
+
+```js
+import 'tippy.js/dist/svg-arrow.css'
+```
+
+To color an SVG arrow, specify `fill` and target `.tippy-svg-arrow`:
+
+```css
+.tippy-box[data-theme~='tomato'] > .tippy-svg-arrow {
+  fill: tomato;
+}
+```
+
+The shape isn't dependent on the placement for styling, making it simpler than CSS arrows.
+
+Use the default round arrow SVG shape:
+
+```js
+import { roundArrow } from 'vue-tippy'
+
+useTippy(target, {
+  arrow: roundArrow,
+})
+```
+
+## Changing arrow size
+
+### Option 1: transform scale
+
+The easiest technique that works for most cases:
+
+```css
+.tippy-box[data-theme~='tomato'] > .tippy-arrow::before {
+  transform: scale(1.5);
+}
+```
+
+### Option 2: Pixel increase
+
+If your tippy theme has a `border` (e.g., the `light-border` theme), the `transform: scale()` technique distorts the border width. Instead, change the arrow size in pixels directly.
+
+## Arrow borders
+
+Import the border stylesheet to aid in adding borders:
+
+```js
+import 'tippy.js/dist/border.css'
+```
+
+This adds color inheritance for borders when using the default CSS arrow and helps create SVG arrow borders.
+
+### CSS arrow with border
+
+```css
+/* The arrow border will match the box border */
+.tippy-box[data-theme~='tomato'] {
+  background: tomato;
+  border: 1px solid yellow;
+}
+```
+
+### SVG arrow with border
+
+Duplicate the SVG arrow to create a border effect:
+
+```js
+import { roundArrow } from 'vue-tippy'
+
+useTippy(target, {
+  arrow: roundArrow + roundArrow,
+})
+```
+
+```css
+/* The border */
+.tippy-box[data-theme~='tomato'] > .tippy-svg-arrow > svg:first-child {
+  fill: yellow;
+}
+
+/* The fill */
+.tippy-box[data-theme~='tomato'] > .tippy-svg-arrow > svg:last-child {
+  fill: tomato;
+}
+```
+
+## Browser DevTools tips
+
+<Note>
+  To inspect a tippy element easily, give it `hideOnClick: false` and `trigger: 'click'` props so it stays visible when you switch focus to DevTools.
+
+  The tippy element is appended to the end of `<body>`. If `interactive: true`, the tippy is appended to the reference element's parentNode instead.
+</Note>

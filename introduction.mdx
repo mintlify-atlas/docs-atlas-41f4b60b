@@ -1,0 +1,77 @@
+---
+title: Introduction
+description: Vue 3 wrapper for Tippy.js - the complete tooltip, popover, dropdown, and menu solution for the web
+---
+
+# VueTippy
+
+VueTippy is a Vue 3 wrapper for [Tippy.js](https://atomiks.github.io/tippyjs/), the complete tooltip, popover, dropdown, and menu solution for the web, powered by Popper.
+
+It provides flexible APIs to integrate tooltips seamlessly into your Vue applications with directives, components, and composables.
+
+## Why VueTippy?
+
+VueTippy is designed to work effortlessly with Vue.js, offering multiple usage patterns to fit your development style:
+
+<CardGroup cols={3}>
+  <Card title="Directive" icon="code" href="/quickstart#directive-usage">
+    Use `v-tippy` for quick, declarative tooltips on any element
+  </Card>
+  <Card title="Component" icon="puzzle-piece" href="/quickstart#component-usage">
+    Wrap elements with `<Tippy>` for template-based control
+  </Card>
+  <Card title="Composable" icon="function" href="/quickstart#composition-api-usage">
+    Use `useTippy()` for programmatic control in setup scripts
+  </Card>
+</CardGroup>
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Optimized positioning" icon="arrows-up-down-left-right">
+    Smart positioning engine with automatic flipping and overflow prevention
+  </Card>
+  <Card title="Accessible by default" icon="universal-access">
+    WAI-ARIA compliant with keyboard navigation support
+  </Card>
+  <Card title="Fully themeable" icon="palette">
+    Style via custom CSS with included themes and animations
+  </Card>
+  <Card title="TypeScript support" icon="code">
+    Complete type definitions out of the box
+  </Card>
+</CardGroup>
+
+## Getting started
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install VueTippy via npm, yarn, or pnpm
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get your first tooltip working in minutes
+  </Card>
+</CardGroup>
+
+## Quick example
+
+```vue
+<template>
+  <!-- Using directive -->
+  <button v-tippy="'Hello from VueTippy!'">Hover me</button>
+  
+  <!-- Using component -->
+  <Tippy content="Hello from VueTippy!">
+    <button>Hover me</button>
+  </Tippy>
+</template>
+
+<script setup>
+import { directive as VTippy, Tippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
+</script>
+```
+
+<Tip>
+  VueTippy works with Vue 3.2.0 and above. For Vue 2 or Tippy.js v4, check the [v4 branch](https://github.com/KABBOUCHI/vue-tippy/tree/v4).
+</Tip>

@@ -1,80 +1,432 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get your first VueTippy tooltip working in minutes with directives, components, or the composition API
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+This guide will help you create your first tooltip using VueTippy. Choose the usage pattern that fits your needs: directive, component, or composition API.
 
-### Step 1: Set up your local environment
+<Tip>
+  Make sure you've [installed VueTippy](/installation) before continuing.
+</Tip>
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+## Basic setup
 
-### Step 2: Deploy your changes
+First, import the Tippy.js CSS for default styling:
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+```js
+import 'tippy.js/dist/tippy.css'
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Info>
+  You can import this CSS in your main app file or in individual components that use tooltips.
+</Info>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+## Usage patterns
 
-### Step 3: Go live
+VueTippy provides three flexible ways to add tooltips to your Vue application:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<Tabs>
+  <Tab title="Directive">
+    ### Directive usage
+
+    The `v-tippy` directive is the quickest way to add tooltips to any element.
+
+    <Steps>
+      <Step title="Import the directive">
+        ```vue
+        <script setup>
+        import { directive as VTippy } from 'vue-tippy'
+        import 'tippy.js/dist/tippy.css'
+        </script>
+        ```
+
+        <Note>
+          If you installed VueTippy globally, you can skip this import and use `v-tippy` directly.
+        </Note>
+      </Step>
+
+      <Step title="Add the directive to an element">
+        Use `v-tippy` with a string or configuration object:
+
+        ```vue
+        <template>
+          <!-- Simple string content -->
+          <button v-tippy="'Hello from VueTippy!'">Hover me</button>
+
+          <!-- With configuration object -->
+          <button v-tippy="{ content: 'Hi!', placement: 'right' }">
+            Hover me
+          </button>
+
+          <!-- Multiple tooltips -->
+          <div>
+            <button v-tippy="'Tooltip 1'">Button 1</button>
+            <button v-tippy="'Tooltip 2'">Button 2</button>
+            <button v-tippy="'Tooltip 3'">Button 3</button>
+          </div>
+        </template>
+        ```
+      </Step>
+    </Steps>
+
+    ### Complete example
+
+    ```vue
+    <template>
+      <div class="demo">
+        <button v-tippy="'Hello!'">
+          Simple tooltip
+        </button>
+
+        <button v-tippy="{ content: 'I am on the right!', placement: 'right' }">
+          Right placement
+        </button>
+
+        <button v-tippy="{ content: 'Click me!', trigger: 'click' }">
+          Click trigger
+        </button>
+      </div>
+    </template>
+
+    <script setup>
+    import { directive as VTippy } from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css'
+    </script>
+
+    <style scoped>
+    .demo {
+      display: flex;
+      gap: 1rem;
+    }
+    </style>
+    ```
+  </Tab>
+
+  <Tab title="Component">
+    ### Component usage
+
+    The `<Tippy>` component provides a template-based approach with support for rich content.
+
+    <Steps>
+      <Step title="Import the component">
+        ```vue
+        <script setup>
+        import { Tippy } from 'vue-tippy'
+        import 'tippy.js/dist/tippy.css'
+        </script>
+        ```
+
+        <Note>
+          If you installed VueTippy globally, you can skip this import and use `<tippy>` directly (lowercase).
+        </Note>
+      </Step>
+
+      <Step title="Wrap your element">
+        Wrap any element with `<Tippy>` and provide content:
+
+        ```vue
+        <template>
+          <!-- Using content prop -->
+          <Tippy content="Hello from VueTippy!">
+            <button>Hover me</button>
+          </Tippy>
+
+          <!-- Using content slot for rich content -->
+          <Tippy>
+            <button>Hover me</button>
+            <template #content>
+              <div>
+                <strong>Rich content</strong>
+                <p>You can use any HTML here!</p>
+              </div>
+            </template>
+          </Tippy>
+        </template>
+        ```
+      </Step>
+    </Steps>
+
+    ### Complete example
+
+    ```vue
+    <template>
+      <div class="demo">
+        <!-- Simple content prop -->
+        <Tippy content="Hello!">
+          <button>Simple tooltip</button>
+        </Tippy>
+
+        <!-- Rich content with slot -->
+        <Tippy placement="right">
+          <button>Rich content</button>
+          <template #content>
+            <div style="padding: 0.5rem;">
+              <h3 style="margin: 0 0 0.5rem;">VueTippy</h3>
+              <p style="margin: 0;">Supports rich HTML content!</p>
+            </div>
+          </template>
+        </Tippy>
+
+        <!-- Interactive tooltip -->
+        <Tippy :interactive="true" trigger="click">
+          <button>Click me</button>
+          <template #content>
+            <div style="padding: 1rem;">
+              <p>This tooltip is interactive!</p>
+              <button @click="handleClick">Click me</button>
+            </div>
+          </template>
+        </Tippy>
+      </div>
+    </template>
+
+    <script setup>
+    import { Tippy } from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css'
+
+    const handleClick = () => {
+      alert('Button clicked inside tooltip!')
+    }
+    </script>
+
+    <style scoped>
+    .demo {
+      display: flex;
+      gap: 1rem;
+    }
+    </style>
+    ```
+  </Tab>
+
+  <Tab title="Composition API">
+    ### Composition API usage
+
+    The `useTippy()` composable provides programmatic control over tooltips.
+
+    <Steps>
+      <Step title="Import the composable">
+        ```vue
+        <script setup>
+        import { ref } from 'vue'
+        import { useTippy } from 'vue-tippy'
+        import 'tippy.js/dist/tippy.css'
+        </script>
+        ```
+      </Step>
+
+      <Step title="Create a template ref">
+        Create a ref for the element you want to attach the tooltip to:
+
+        ```vue
+        <script setup>
+        import { ref } from 'vue'
+        import { useTippy } from 'vue-tippy'
+        import 'tippy.js/dist/tippy.css'
+
+        const buttonRef = ref()
+        </script>
+        ```
+      </Step>
+
+      <Step title="Initialize the tooltip">
+        Call `useTippy()` with the ref and configuration:
+
+        ```vue
+        <script setup>
+        import { ref } from 'vue'
+        import { useTippy } from 'vue-tippy'
+        import 'tippy.js/dist/tippy.css'
+
+        const buttonRef = ref()
+
+        useTippy(buttonRef, {
+          content: 'Hello from useTippy!',
+          placement: 'right',
+        })
+        </script>
+        ```
+      </Step>
+
+      <Step title="Attach the ref to your element">
+        ```vue
+        <template>
+          <button ref="buttonRef">Hover me</button>
+        </template>
+        ```
+      </Step>
+    </Steps>
+
+    ### Complete example
+
+    ```vue
+    <template>
+      <div class="demo">
+        <button ref="simpleButton">Simple tooltip</button>
+        <button ref="rightButton">Right placement</button>
+        <button ref="clickButton">Click trigger</button>
+      </div>
+    </template>
+
+    <script setup>
+    import { ref } from 'vue'
+    import { useTippy } from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css'
+
+    const simpleButton = ref()
+    const rightButton = ref()
+    const clickButton = ref()
+
+    // Simple tooltip
+    useTippy(simpleButton, {
+      content: 'Hello!',
+    })
+
+    // Custom placement
+    useTippy(rightButton, {
+      content: 'I am on the right!',
+      placement: 'right',
+    })
+
+    // Click trigger
+    useTippy(clickButton, {
+      content: 'Click me!',
+      trigger: 'click',
+    })
+    </script>
+
+    <style scoped>
+    .demo {
+      display: flex;
+      gap: 1rem;
+    }
+    </style>
+    ```
+
+    ### Programmatic control
+
+    `useTippy()` returns a Tippy instance that you can control programmatically:
+
+    ```vue
+    <template>
+      <div>
+        <button ref="buttonRef">Target element</button>
+        <button @click="tippy.show()">Show</button>
+        <button @click="tippy.hide()">Hide</button>
+        <button @click="tippy.disable()">Disable</button>
+        <button @click="tippy.enable()">Enable</button>
+      </div>
+    </template>
+
+    <script setup>
+    import { ref } from 'vue'
+    import { useTippy } from 'vue-tippy'
+    import 'tippy.js/dist/tippy.css'
+
+    const buttonRef = ref()
+
+    const tippy = useTippy(buttonRef, {
+      content: 'Controlled tooltip',
+    })
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+## Common configuration options
+
+Here are some frequently used options you can pass to any usage pattern:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `content` | `string \| Element` | `''` | The tooltip content |
+| `placement` | `string` | `'top'` | Preferred placement: `top`, `bottom`, `left`, `right`, etc. |
+| `trigger` | `string` | `'mouseenter focus'` | Event(s) that trigger the tooltip: `mouseenter`, `click`, `focus`, etc. |
+| `interactive` | `boolean` | `false` | Whether the tooltip can be hovered/clicked |
+| `arrow` | `boolean` | `true` | Whether to show an arrow |
+| `theme` | `string` | `''` | Theme name (requires importing theme CSS) |
+| `animation` | `string` | `'fade'` | Animation name: `fade`, `scale`, `shift-away`, etc. |
+| `delay` | `number \| [number, number]` | `0` | Delay in ms before showing/hiding |
+
+<Tip>
+  For a complete list of options, see the [Tippy.js documentation](https://atomiks.github.io/tippyjs/v6/all-props/).
+</Tip>
+
+## Advanced examples
+
+### HTML content with allowHTML
+
+<Warning>
+  Only enable `allowHTML` for trusted content to avoid XSS vulnerabilities.
+</Warning>
+
+```vue
+<template>
+  <button v-tippy="{ content: htmlContent, allowHTML: true }">
+    Hover me
+  </button>
+</template>
+
+<script setup>
+import { directive as VTippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
+
+const htmlContent = '<strong>Bold</strong> and <em>italic</em> text'
+</script>
+```
+
+### Custom animations
+
+```vue
+<template>
+  <button v-tippy="{ content: 'Animated!', animation: 'scale' }">
+    Scale animation
+  </button>
+  <button v-tippy="{ content: 'Animated!', animation: 'shift-away' }">
+    Shift animation
+  </button>
+</template>
+
+<script setup>
+import { directive as VTippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
+import 'tippy.js/animations/scale.css'
+import 'tippy.js/animations/shift-away.css'
+</script>
+```
+
+### Delay and duration
+
+```vue
+<template>
+  <button v-tippy="{ content: 'Delayed', delay: [500, 0] }">
+    500ms delay on show
+  </button>
+  <button v-tippy="{ content: 'Custom duration', duration: [300, 200] }">
+    Custom show/hide duration
+  </button>
+</template>
+
+<script setup>
+import { directive as VTippy } from 'vue-tippy'
+import 'tippy.js/dist/tippy.css'
+</script>
+```
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Props" icon="gear" href="/api/props">
+    Explore all configuration options
+  </Card>
+  <Card title="Themes & Styling" icon="palette" href="/styling/themes">
+    Customize tooltip appearance
+  </Card>
+  <Card title="Advanced Usage" icon="rocket" href="/advanced/singleton">
+    Learn advanced patterns and techniques
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/props">
+    Complete API documentation
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

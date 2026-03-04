@@ -1,0 +1,163 @@
+---
+title: Singleton tooltips
+description: Create a single tooltip instance that smoothly transitions between multiple reference elements for better performance and UX.
+---
+
+Singleton tooltips allow you to create one tooltip instance that smoothly transitions between multiple reference elements. This provides better performance and a smoother user experience compared to creating individual tooltips.
+
+## Benefits
+
+- **Better performance**: Only one tooltip instance is created instead of multiple
+- **Smooth transitions**: The tooltip smoothly moves between elements
+- **Consistent styling**: All tooltips share the same configuration
+- **Reduced memory**: Lower memory footprint for many tooltips
+
+## Using the component
+
+Wrap your tooltip elements with `<TippySingleton>` to create a singleton group.
+
+```vue
+<template>
+  <TippySingleton 
+    move-transition="transform 0.2s ease-out" 
+    placement="top"
+  >
+    <Tippy content="First tooltip">
+      <button>Button 1</button>
+    </Tippy>
+
+    <Tippy content="Second tooltip">
+      <button>Button 2</button>
+    </Tippy>
+
+    <Tippy content="Third tooltip">
+      <button>Button 3</button>
+    </Tippy>
+  </TippySingleton>
+</template>
+
+<script setup>
+import { Tippy, TippySingleton } from 'vue-tippy'
+</script>
+```
+
+## Using the composable
+
+For more control, use the `useSingleton` composable with refs or the directive.
+
+```vue
+<template>
+  <div>
+    <button 
+      :ref="v => singletons.push(v)" 
+      v-tippy="'First tooltip'"
+    >
+      Button 1
+    </button>
+    
+    <button 
+      :ref="v => singletons.push(v)" 
+      v-tippy="'Second tooltip'"
+    >
+      Button 2
+    </button>
+    
+    <button 
+      :ref="v => singletons.push(v)" 
+      v-tippy="'Third tooltip'"
+    >
+      Button 3
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useSingleton } from 'vue-tippy'
+
+const singletons = ref([])
+
+useSingleton(singletons, {
+  placement: 'top',
+  moveTransition: 'transform 0.2s ease-out',
+})
+</script>
+```
+
+## Configuration
+
+The singleton accepts all standard Tippy.js props plus:
+
+- `moveTransition` - CSS transition for moving between elements
+- All other [Tippy.js props](/api/props) apply to the singleton instance
+
+<Note>
+  The singleton tooltip will inherit props from individual tooltips, but singleton-level props take precedence.
+</Note>
+
+## Advanced example with dynamic content
+
+```vue
+<template>
+  <TippySingleton 
+    :move-transition="'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'"
+    placement="top"
+    arrow
+    :delay="[200, 0]"
+  >
+    <Tippy v-for="item in items" :key="item.id" :content="item.tooltip">
+      <button class="action-btn">
+        {{ item.label }}
+      </button>
+    </Tippy>
+  </TippySingleton>
+</template>
+
+<script setup>
+import { Tippy, TippySingleton } from 'vue-tippy'
+
+const items = [
+  { id: 1, label: 'Save', tooltip: 'Save your changes' },
+  { id: 2, label: 'Delete', tooltip: 'Delete this item' },
+  { id: 3, label: 'Share', tooltip: 'Share with others' },
+]
+</script>
+```
+
+## How it works
+
+The implementation uses Tippy.js's `createSingleton` API:
+
+```typescript
+// From src/composables/useSingleton.ts
+export function useSingleton(
+  instances: TippyInstances,
+  optionalProps?: Partial<CreateSingletonProps<Props>>
+) {
+  const singleton = ref<ReturnType<typeof createSingleton>>()
+
+  onMounted(() => {
+    const tippyInstances: Instance<any>[] = pendingTippyInstances
+      .map((instance: TippyInstance) => {
+        if (instance instanceof Element) {
+          return instance._tippy
+        }
+        return instance
+      })
+      .filter(Boolean)
+
+    singleton.value = createSingleton(
+      tippyInstances,
+      optionalProps
+        ? { allowHTML: true, ...optionalProps }
+        : { allowHTML: true }
+    )
+  })
+
+  return { singleton }
+}
+```
+
+<Info>
+  For more details on singleton behavior, see the [Tippy.js singleton documentation](https://atomiks.github.io/tippyjs/v6/addons/#singleton).
+</Info>

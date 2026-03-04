@@ -1,0 +1,236 @@
+---
+title: useTippyComponent
+description: Composable that returns a Tippy component instance with programmatic access
+---
+
+The `useTippyComponent` composable creates a Tippy component using Vue's `h()` function and provides a ref to access the component instance. This is useful when you need both the declarative component API and programmatic control.
+
+## Signature
+
+```typescript
+function useTippyComponent(
+  opts?: TippyOptions,
+  children?: any
+): UseTippyComponentReturn
+```
+
+## Parameters
+
+<ParamField path="opts" type="TippyOptions" default="{}">
+  Tippy.js configuration options. All [Tippy.js props](/api/props) are supported, including:
+  
+  - `content` - The tooltip content (string, HTML, or Vue component)
+  - `placement` - Tooltip position (e.g., 'top', 'bottom', 'left', 'right')
+  - `trigger` - Event that triggers the tooltip ('mouseenter focus', 'click', etc.)
+  - `interactive` - Whether the tooltip is interactive
+  - `arrow` - Show arrow pointer
+  - All other Tippy.js properties
+</ParamField>
+
+<ParamField path="children" type="any">
+  The default slot content for the Tippy component. This is the trigger element that will activate the tooltip.
+</ParamField>
+
+## Return value
+
+Returns an object with the following properties:
+
+<ResponseField name="instance" type="Ref<TippyComponent | undefined>">
+  A ref to the Tippy component instance. Access this to programmatically control the tooltip using methods like `show()`, `hide()`, `setContent()`, etc.
+  
+  The instance will be `undefined` until the component is mounted.
+</ResponseField>
+
+<ResponseField name="TippyComponent" type="VNode">
+  A VNode of the Tippy component created with `h()`. Render this in your template using a render function or by returning it from your setup function.
+</ResponseField>
+
+## Examples
+
+### Basic usage
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h } from 'vue'
+
+const { TippyComponent, instance } = useTippyComponent(
+  { content: 'Hello from Tippy!' },
+  h('button', 'Hover me')
+)
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+### With programmatic control
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h } from 'vue'
+
+const { TippyComponent, instance } = useTippyComponent(
+  {
+    content: 'Controlled tooltip',
+    trigger: 'manual',
+  },
+  h('button', { onClick: toggleTooltip }, 'Toggle')
+)
+
+function toggleTooltip() {
+  if (instance.value) {
+    if (instance.value.state.isVisible) {
+      instance.value.hide()
+    } else {
+      instance.value.show()
+    }
+  }
+}
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+### Using render function
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h } from 'vue'
+
+const { TippyComponent } = useTippyComponent(
+  {
+    content: 'Tooltip content',
+    arrow: true,
+  },
+  h('span', { class: 'trigger' }, 'Trigger element')
+)
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+### Accessing component methods
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h, watch } from 'vue'
+
+const { TippyComponent, instance } = useTippyComponent(
+  { content: 'Initial content' },
+  h('button', 'Hover me')
+)
+
+// Wait for instance to be available
+watch(instance, (newInstance) => {
+  if (newInstance) {
+    console.log('Tippy instance mounted:', newInstance)
+    
+    // Now you can access all instance methods
+    newInstance.setContent('Updated content')
+  }
+})
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+### Complex children
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h } from 'vue'
+import IconButton from '@/components/IconButton.vue'
+
+const { TippyComponent } = useTippyComponent(
+  {
+    content: 'Click to copy',
+    placement: 'top',
+  },
+  h(IconButton, {
+    icon: 'copy',
+    onClick: handleCopy,
+  })
+)
+
+function handleCopy() {
+  // Copy logic
+}
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+### Dynamic content update
+
+```vue
+<script setup>
+import { useTippyComponent } from 'vue-tippy'
+import { h, ref } from 'vue'
+
+const count = ref(0)
+
+const { TippyComponent, instance } = useTippyComponent(
+  { content: `Count: ${count.value}` },
+  h('button', {
+    onClick: () => {
+      count.value++
+      instance.value?.setContent(`Count: ${count.value}`)
+    },
+  }, 'Increment')
+)
+</script>
+
+<template>
+  <component :is="TippyComponent" />
+</template>
+```
+
+## Instance methods
+
+Once the component is mounted, the `instance` ref provides access to all Tippy component methods:
+
+<Expandable title="Available methods">
+  - `show()` - Show the tooltip
+  - `hide()` - Hide the tooltip
+  - `enable()` - Enable the tooltip
+  - `disable()` - Disable the tooltip
+  - `setContent(content)` - Update tooltip content
+  - `setProps(props)` - Update tooltip props
+  - `destroy()` - Destroy the tooltip
+  - `unmount()` - Unmount the tooltip
+  - `mount()` - Mount the tooltip
+  - `state` - Reactive state object
+</Expandable>
+
+## When to use
+
+Use `useTippyComponent` when:
+
+- You need a component-based approach with programmatic control
+- You're working with render functions
+- You want to dynamically create Tippy components in your setup function
+- You need access to the component instance for imperative operations
+
+For simpler use cases, consider:
+- [Tippy component](/api/components/tippy) for template-based usage
+- [useTippy](/api/composables/use-tippy) for direct element-based tooltips
+
+## See also
+
+- [useTippy](/api/composables/use-tippy) - Low-level composable for element-based tooltips
+- [Tippy Component](/api/components/tippy) - Template-based component usage
+- [Props](/api/props) - Full list of configuration options

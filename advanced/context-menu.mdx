@@ -1,0 +1,355 @@
+---
+title: Context menu
+description: Create custom right-click context menus using VueTippy with manual trigger control and positioning.
+---
+
+Context menus (right-click menus) can be easily implemented with VueTippy by combining manual trigger control with click positioning.
+
+## Basic context menu
+
+Create a context menu by setting `trigger` to `manual` and controlling visibility with show/hide methods:
+
+```vue
+<template>
+  <div 
+    ref="target"
+    @contextmenu.prevent="showContextMenu"
+    class="context-area"
+  >
+    Right-click anywhere in this area
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+
+const { tippy } = useTippy(target, {
+  content: `
+    <div class="context-menu">
+      <button>Cut</button>
+      <button>Copy</button>
+      <button>Paste</button>
+    </div>
+  `,
+  trigger: 'manual',
+  interactive: true,
+  arrow: false,
+  placement: 'right-start',
+  allowHTML: true,
+})
+
+const showContextMenu = (event) => {
+  tippy.value.show()
+}
+</script>
+```
+
+## Position at cursor
+
+Use `getReferenceClientRect` to position the menu exactly where the user right-clicked:
+
+```vue
+<template>
+  <div 
+    ref="target"
+    @contextmenu.prevent="showContextMenu"
+    class="workspace"
+  >
+    Right-click for context menu
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+const cursorPosition = ref({ x: 0, y: 0 })
+
+const { tippy } = useTippy(target, {
+  content: createContextMenu(),
+  trigger: 'manual',
+  interactive: true,
+  arrow: false,
+  placement: 'right-start',
+  allowHTML: true,
+  getReferenceClientRect: () => ({
+    width: 0,
+    height: 0,
+    top: cursorPosition.value.y,
+    bottom: cursorPosition.value.y,
+    left: cursorPosition.value.x,
+    right: cursorPosition.value.x,
+  }),
+})
+
+const showContextMenu = (event) => {
+  cursorPosition.value = {
+    x: event.clientX,
+    y: event.clientY,
+  }
+  tippy.value.show()
+}
+
+const createContextMenu = () => `
+  <div class="context-menu">
+    <button onclick="console.log('Cut')">Cut</button>
+    <button onclick="console.log('Copy')">Copy</button>
+    <button onclick="console.log('Paste')">Paste</button>
+    <hr />
+    <button onclick="console.log('Delete')">Delete</button>
+  </div>
+`
+</script>
+
+<style>
+.context-menu {
+  padding: 4px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background: #f0f0f0;
+}
+</style>
+```
+
+## Using Vue components
+
+For more complex menus, use Vue components as content:
+
+```vue
+<template>
+  <div 
+    ref="target"
+    @contextmenu.prevent="showContextMenu"
+    class="editor"
+  >
+    Right-click for options
+  </div>
+</template>
+
+<script setup>
+import { ref, h } from 'vue'
+import { useTippy } from 'vue-tippy'
+import ContextMenuComponent from './ContextMenuComponent.vue'
+
+const target = ref()
+
+const { tippy } = useTippy(target, {
+  content: h(ContextMenuComponent, {
+    onAction: handleAction,
+  }),
+  trigger: 'manual',
+  interactive: true,
+  arrow: false,
+  placement: 'right-start',
+  hideOnClick: true,
+})
+
+const showContextMenu = (event) => {
+  tippy.value.show()
+}
+
+const handleAction = (action) => {
+  console.log('Action:', action)
+  tippy.value.hide()
+}
+</script>
+```
+
+## Auto-hide on outside click
+
+Close the context menu when clicking outside:
+
+```vue
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+
+const { tippy } = useTippy(target, {
+  content: 'Context menu content',
+  trigger: 'manual',
+  interactive: true,
+  hideOnClick: true,
+  onShow: () => {
+    document.addEventListener('click', hideMenu)
+  },
+  onHide: () => {
+    document.removeEventListener('click', hideMenu)
+  },
+})
+
+const hideMenu = (event) => {
+  if (!event.target.closest('[data-tippy-root]')) {
+    tippy.value.hide()
+  }
+}
+
+const showContextMenu = (event) => {
+  event.preventDefault()
+  tippy.value.show()
+}
+</script>
+```
+
+## Full example with actions
+
+<CodeGroup>
+```vue App.vue
+<template>
+  <div 
+    ref="target"
+    @contextmenu.prevent="handleContextMenu"
+    class="canvas"
+  >
+    <p>Right-click for menu</p>
+    <p>Selected items: {{ selectedCount }}</p>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useTippy } from 'vue-tippy'
+
+const target = ref()
+const selectedCount = ref(0)
+const clickPos = ref({ x: 0, y: 0 })
+
+const actions = [
+  { label: 'New Item', action: () => console.log('New') },
+  { label: 'Duplicate', action: () => console.log('Duplicate') },
+  { label: 'Delete', action: () => console.log('Delete'), danger: true },
+]
+
+const { tippy, setContent } = useTippy(target, {
+  content: generateMenu(),
+  trigger: 'manual',
+  interactive: true,
+  arrow: false,
+  placement: 'bottom-start',
+  allowHTML: true,
+  getReferenceClientRect: () => ({
+    width: 0,
+    height: 0,
+    top: clickPos.value.y,
+    bottom: clickPos.value.y,
+    left: clickPos.value.x,
+    right: clickPos.value.x,
+  }),
+})
+
+const generateMenu = () => {
+  const items = actions.map(a => 
+    `<button 
+      onclick="window.handleContextAction('${a.label}')"
+      class="${a.danger ? 'danger' : ''}"
+    >
+      ${a.label}
+    </button>`
+  ).join('')
+  
+  return `<div class="context-menu">${items}</div>`
+}
+
+const handleContextMenu = (event) => {
+  clickPos.value = { x: event.clientX, y: event.clientY }
+  tippy.value.show()
+}
+
+// Expose action handler globally for onclick
+window.handleContextAction = (label) => {
+  const action = actions.find(a => a.label === label)
+  if (action) action.action()
+  tippy.value.hide()
+}
+</script>
+
+<style scoped>
+.canvas {
+  width: 100%;
+  height: 400px;
+  border: 2px dashed #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+</style>
+```
+
+```css styles.css
+.context-menu {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  min-width: 150px;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.context-menu button:hover {
+  background: #f5f5f5;
+}
+
+.context-menu button.danger {
+  color: #d32f2f;
+}
+
+.context-menu button.danger:hover {
+  background: #ffebee;
+}
+```
+</CodeGroup>
+
+## Key configuration
+
+<Note>
+  Essential props for context menus:
+  - `trigger: 'manual'` - Control visibility programmatically
+  - `interactive: true` - Allow clicking menu items
+  - `hideOnClick: true` - Close when clicking items
+  - `arrow: false` - Remove the arrow pointer
+</Note>
+
+## Tips and best practices
+
+- Always use `@contextmenu.prevent` to disable the default browser menu
+- Use `getReferenceClientRect` for precise cursor positioning
+- Set `interactive: true` to allow clicking menu items
+- Consider keyboard shortcuts for menu actions
+- Handle cleanup in `onHide` callback
+
+<Warning>
+  When using inline `onclick` handlers in HTML content, be careful with event handling. Consider using Vue components with proper event handling for complex interactions.
+</Warning>
