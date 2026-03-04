@@ -1,0 +1,105 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "VueTippy",
+  "projectDescription": "Vue 3 wrapper for Tippy.js tooltip library with directive, component, and composition API support",
+  "theme": "palm",
+  "primaryColor": "#41b883",
+  "lightColor": null,
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Usage Guides",
+            "pages": [
+              "usage/directive",
+              "usage/component",
+              "usage/composition-api"
+            ]
+          },
+          {
+            "group": "Styling",
+            "pages": [
+              "styling/themes",
+              "styling/animations"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/singleton",
+              "advanced/follow-cursor",
+              "advanced/context-menu",
+              "advanced/trigger-target"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Props",
+            "pages": [
+              "api/props"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "api/components/tippy",
+              "api/components/tippy-singleton"
+            ]
+          },
+          {
+            "group": "Composables",
+            "pages": [
+              "api/composables/use-tippy",
+              "api/composables/use-tippy-component",
+              "api/composables/use-singleton"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utilities"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Three usage flavors: directive (v-tippy), component (<Tippy/>), and composition API (useTippy)",
+    "TypeScript support out of the box",
+    "Singleton tooltips for smooth transitions between multiple tooltips",
+    "Accessible by default with WAI-ARIA compliance",
+    "Themeable with built-in themes (light, material, translucent)",
+    "Multiple animation options with custom animation support",
+    "Optimized positioning engine with flip and overflow prevention",
+    "Interactive tooltips with rich content support including Vue components"
+  ],
+  "publicApiSurface": [
+    "useTippy(target, props) - Composition API for attaching tooltips to elements",
+    "useTippyComponent(options) - Composable for advanced component usage",
+    "useSingleton(targets, props) - Composition API for singleton tooltips",
+    "<Tippy> - Component for creating tooltips with template syntax",
+    "<TippySingleton> - Component for creating singleton tooltip groups",
+    "directive - Vue directive for simple tooltip usage (v-tippy)",
+    "plugin - Vue plugin for global installation",
+    "tippy(targets, props) - Direct access to Tippy.js instance",
+    "hideAll(options) - Utility to hide all tooltips",
+    "roundArrow - SVG round arrow shape",
+    "setDefaultProps(props) - Set global default props for all tooltips"
+  ]
+}
